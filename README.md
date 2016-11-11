@@ -1,6 +1,7 @@
 # nautilus-extension-rs
 
 A safe Rust wrapper for the [libnautilus-extension](https://developer.gnome.org/libnautilus-extension/) C library.
+
 Create extensions to the GNOME Nautilus file browser (and Files in Ubuntu).
 
 ## Example
