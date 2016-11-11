@@ -2,9 +2,9 @@
 name = "nautilus-extension"
 version = "0.1.0"
 authors = ["Andrew Shu <talklittle@gmail.com>"]
-description = "Safe Rust wrapper for libnautilus-extension"
+description = "Safe Rust wrapper for libnautilus-extension, to extend GNOME Nautilus file browser (aka Files in Ubuntu)"
 repository = "https://github.com/talklittle/nautilus-extension-rs"
-keywords = ["nautilus", "bindings"]
+keywords = ["nautilus", "bindings", "gnome", "ubuntu"]
 license = "GPL-3.0"
 
 [lib]
