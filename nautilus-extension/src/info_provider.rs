@@ -28,21 +28,21 @@ impl FileInfo {
         }
     }
 
-    pub fn get_uri(&mut self) -> String {
-        let ref mut raw_file_info = self.raw_file_info;
+    pub fn get_uri(&self) -> String {
+        let ref raw_file_info = self.raw_file_info;
         unsafe {
             CStr::from_ptr(nautilus_file_info_get_uri(*raw_file_info)).to_string_lossy().into_owned()
         }
     }
 
-    pub fn get_uri_scheme(&mut self) -> String {
-        let ref mut raw_file_info = self.raw_file_info;
+    pub fn get_uri_scheme(&self) -> String {
+        let ref raw_file_info = self.raw_file_info;
         unsafe {
             CStr::from_ptr(nautilus_file_info_get_uri_scheme(*raw_file_info)).to_string_lossy().into_owned()
         }
     }
 
-    pub fn invalidate_extension_info(&mut self) {
+    pub fn invalidate_extension_info(&self) {
         unsafe {
             nautilus_file_info_invalidate_extension_info(self.raw_file_info);
         }
