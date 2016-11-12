@@ -12,13 +12,15 @@ pub trait InfoProvider : Send + Sync {
     fn update_file_info(&self, &mut FileInfo);
 }
 
-pub struct FileInfo<'a> {
-    pub raw_file_info: &'a mut NautilusFileInfo,
+pub struct FileInfo {
+    pub raw_file_info: *mut NautilusFileInfo,
     pub attributes: HashMap<String, String>,
 }
 
-impl<'a> FileInfo<'a> {
-    pub fn new(raw_file_info: *mut NautilusFileInfo) -> FileInfo<'a> {
+unsafe impl Send for FileInfo {}
+
+impl FileInfo {
+    pub fn new(raw_file_info: *mut NautilusFileInfo) -> FileInfo {
         FileInfo {
             raw_file_info: unsafe { &mut *raw_file_info },
             attributes: HashMap::new(),

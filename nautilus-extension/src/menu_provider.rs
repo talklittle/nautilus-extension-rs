@@ -12,7 +12,7 @@ use std::ptr;
 use std::sync::Mutex;
 
 pub trait MenuProvider : Send + Sync {
-    fn get_file_items<'a>(&self, window: *mut GtkWidget, files: &Vec<FileInfo<'a>>) -> Vec<MenuItem>;
+    fn get_file_items(&self, window: *mut GtkWidget, files: &Vec<FileInfo>) -> Vec<MenuItem>;
 }
 
 pub struct Menu {
@@ -102,7 +102,7 @@ macro_rules! menu_provider_iface {
     }
 }
 
-fn file_info_vec_from_g_list<'a>(list: *mut GList) -> Vec<FileInfo<'a>> {
+fn file_info_vec_from_g_list<'a>(list: *mut GList) -> Vec<FileInfo> {
     let mut vec = vec![];
     unsafe {
         let list = nautilus_file_info_list_copy(list);
