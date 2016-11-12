@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1 (2016-11-12)
+
+* Fixed unnecessary `FileInfo` lifetime and argument mutability.
+
 ## 0.1.0 (2016-11-10)
 
 * First public release.
