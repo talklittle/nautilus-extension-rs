@@ -12,6 +12,7 @@ pub trait InfoProvider : Send + Sync {
     fn update_file_info(&self, &mut FileInfo);
 }
 
+#[derive(Clone)]
 pub struct FileInfo {
     pub raw_file_info: *mut NautilusFileInfo,
     pub attributes: HashMap<String, String>,
