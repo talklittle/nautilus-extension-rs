@@ -11,11 +11,14 @@ pub use column_provider::{Column, ColumnProvider};
 pub use info_provider::{FileInfo, InfoProvider};
 pub use menu_provider::{Menu, MenuItem, MenuProvider};
 pub use nautilus_module::NautilusModule;
+pub use property_page_provider::{PropertyPage, PropertyPageProvider};
 
 pub mod column_provider;
 pub mod info_provider;
 pub mod menu_provider;
+pub mod property_page_provider;
 mod nautilus_module;
+mod translate;
 
 #[macro_export]
 macro_rules! nautilus_module {

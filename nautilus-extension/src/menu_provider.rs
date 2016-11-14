@@ -1,14 +1,15 @@
-use glib_ffi::{GList, g_list_append, g_list_length, g_list_nth_data, gpointer};
+use glib_ffi::{GList, g_list_append, gpointer};
 use gobject_ffi::{GConnectFlags, GObject, g_signal_connect_data};
 use gtk_ffi::GtkWidget;
 use info_provider::FileInfo;
 use libc::c_void;
-use nautilus_ffi::{NautilusFileInfo, NautilusMenu, NautilusMenuItem, NautilusMenuProviderIface};
+use nautilus_ffi::{NautilusMenu, NautilusMenuItem, NautilusMenuProviderIface};
 use nautilus_ffi::{nautilus_menu_new, nautilus_menu_append_item, nautilus_menu_item_new, nautilus_menu_item_set_submenu};
 use std::ffi::CString;
 use std::mem;
 use std::ptr;
 use std::sync::Mutex;
+use translate::file_info_vec_from_g_list;
 
 pub trait MenuProvider : Send + Sync {
     fn get_file_items(&self, window: *mut GtkWidget, files: &Vec<FileInfo>) -> Vec<MenuItem>;
@@ -99,18 +100,6 @@ macro_rules! menu_provider_iface {
             static ref $rust_provider: Mutex<Option<Box<MenuProvider>>> = Mutex::new(None);
         }
     }
-}
-
-fn file_info_vec_from_g_list<'a>(list: *mut GList) -> Vec<FileInfo> {
-    let mut vec = vec![];
-    unsafe {
-        let length = g_list_length(list);
-        for i in 0..length {
-            let raw_file_info = g_list_nth_data(list, i) as *mut NautilusFileInfo;
-            vec.push(FileInfo::new(raw_file_info));
-        }
-    }
-    vec
 }
 
 fn menu_to_g_list(menu: &Menu, files_user_data: *mut c_void) -> *mut GList {
