@@ -95,6 +95,7 @@ extern {
     pub fn nautilus_menu_new() -> *mut NautilusMenu;
     pub fn nautilus_menu_provider_get_type() -> GType;
     pub fn nautilus_property_page_new(name: *const c_char, label: *mut GtkWidget, page: *mut GtkWidget) -> *mut NautilusPropertyPage;
+    pub fn nautilus_property_page_provider_get_type() -> GType;
 }
 
 #[repr(C)]
