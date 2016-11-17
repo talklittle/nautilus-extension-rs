@@ -8,7 +8,7 @@ use std::ffi::{CStr, CString};
 use std::sync::{Arc, Mutex};
 
 pub trait InfoProvider : Send + Sync {
-    fn should_update_file_info(&self, &mut FileInfo) -> bool;
+    fn should_update_file_info(&self, &FileInfo) -> bool;
     fn update_file_info(&self, &mut FileInfo);
 }
 
@@ -23,7 +23,7 @@ unsafe impl Send for FileInfo {}
 impl FileInfo {
     pub fn new(raw_file_info: *mut NautilusFileInfo) -> FileInfo {
         FileInfo {
-            raw_file_info: unsafe { &mut *raw_file_info },
+            raw_file_info: raw_file_info,
             attributes: HashMap::new(),
         }
     }
