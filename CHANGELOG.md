@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2 (2016-11-16)
+
+* Removed unnecessary unsafe code and argument mutability.
+
 ## 0.1.1 (2016-11-12)
 
 * Fixed unnecessary `FileInfo` lifetime and argument mutability.
