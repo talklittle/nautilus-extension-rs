@@ -4,7 +4,6 @@ use gtk_ffi::GtkWidget;
 use info_provider::FileInfo;
 use libc::c_void;
 use nautilus_ffi::{NautilusFileInfo, NautilusMenu, NautilusMenuItem, NautilusMenuProviderIface};
-use nautilus_ffi::nautilus_file_info_list_copy;
 use nautilus_ffi::{nautilus_menu_new, nautilus_menu_append_item, nautilus_menu_item_new, nautilus_menu_item_set_submenu};
 use std::ffi::CString;
 use std::mem;
@@ -105,7 +104,6 @@ macro_rules! menu_provider_iface {
 fn file_info_vec_from_g_list<'a>(list: *mut GList) -> Vec<FileInfo> {
     let mut vec = vec![];
     unsafe {
-        let list = nautilus_file_info_list_copy(list);
         let length = g_list_length(list);
         for i in 0..length {
             let raw_file_info = g_list_nth_data(list, i) as *mut NautilusFileInfo;
