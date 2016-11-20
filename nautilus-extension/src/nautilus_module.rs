@@ -6,7 +6,8 @@ use gobject_ffi::G_TYPE_OBJECT;
 use info_provider::{InfoProvider, take_next_info_provider_iface_index, info_provider_iface_externs, rust_info_provider_setters};
 use libc::c_char;
 use menu_provider::{MenuProvider, take_next_menu_provider_iface_index, menu_provider_iface_externs, rust_menu_provider_setters};
-use nautilus_ffi::{nautilus_column_provider_get_type, nautilus_info_provider_get_type, nautilus_menu_provider_get_type};
+use nautilus_ffi::{nautilus_column_provider_get_type, nautilus_info_provider_get_type, nautilus_menu_provider_get_type, nautilus_property_page_provider_get_type};
+use property_page_provider::{PropertyPageProvider, take_next_property_page_provider_iface_index, property_page_provider_iface_externs, rust_property_page_provider_setters};
 use std::ffi::CString;
 use std::mem;
 use std::ptr;
@@ -33,6 +34,7 @@ pub struct NautilusModule {
     column_provider_iface_infos: Vec<GInterfaceInfo>,
     info_provider_iface_infos: Vec<GInterfaceInfo>,
     menu_provider_iface_infos: Vec<GInterfaceInfo>,
+    property_page_provider_iface_infos: Vec<GInterfaceInfo>,
 }
 
 impl NautilusModule {
@@ -43,6 +45,7 @@ impl NautilusModule {
             column_provider_iface_infos: vec![],
             info_provider_iface_infos: vec![],
             menu_provider_iface_infos: vec![],
+            property_page_provider_iface_infos: vec![],
         }
     }
 
@@ -100,6 +103,24 @@ impl NautilusModule {
         self
     }
 
+    pub fn add_property_page_provider<'a, T: PropertyPageProvider + 'static>(&'a mut self, property_page_provider: T) -> &'a mut NautilusModule {
+        let index = take_next_property_page_provider_iface_index();
+        let iface_init_fn = property_page_provider_iface_externs()[index];
+        let ref rust_provider_setter = rust_property_page_provider_setters()[index];
+
+        let property_page_provider_iface_info = GInterfaceInfo {
+            interface_init: Some(iface_init_fn),
+            interface_finalize: None,
+            interface_data: ptr::null_mut(),
+        };
+
+        rust_provider_setter(Box::new(property_page_provider));
+
+        self.property_page_provider_iface_infos.push(property_page_provider_iface_info);
+
+        self
+    }
+
     pub fn register(&self) -> GType {
         let name = CString::new(self.name.as_str()).unwrap();
 
@@ -129,6 +150,10 @@ impl NautilusModule {
 
             for menu_provider_iface_info in &self.menu_provider_iface_infos {
                 g_type_module_add_interface(self.module, module_type, nautilus_menu_provider_get_type(), menu_provider_iface_info);
+            }
+
+            for property_page_provider_iface_info in &self.property_page_provider_iface_infos {
+                g_type_module_add_interface(self.module, module_type, nautilus_property_page_provider_get_type(), property_page_provider_iface_info);
             }
 
             module_type
