@@ -15,18 +15,20 @@ pub trait MenuProvider : Send + Sync {
     fn get_file_items(&self, window: *mut GtkWidget, files: &Vec<FileInfo>) -> Vec<MenuItem>;
 }
 
+#[derive(Clone)]
 pub struct Menu {
     menu_items: Vec<MenuItem>,
 }
 
 impl Menu {
-    pub fn new(menu_items: Vec<MenuItem>) -> Menu {
+    pub fn new(menu_items: &Vec<MenuItem>) -> Menu {
         Menu {
-            menu_items: menu_items,
+            menu_items: menu_items.clone(),
         }
     }
 }
 
+#[derive(Clone)]
 pub struct MenuItem {
     name: String,
     label: String,
@@ -37,19 +39,23 @@ pub struct MenuItem {
 }
 
 impl MenuItem {
-    pub fn new(name: String, label: String, tip: String, icon: Option<String>) -> MenuItem {
+    pub fn new(name: &str, label: &str, tip: &str, icon: Option<&str>) -> MenuItem {
+        let icon = match icon {
+            Some(s) => Some(s.to_string()),
+            None => None,
+        };
         MenuItem {
-            name: name,
-            label: label,
-            tip: tip,
+            name: name.to_string(),
+            label: label.to_string(),
+            tip: tip.to_string(),
             icon: icon,
             submenu: None,
             activate_fn: None,
         }
     }
 
-    pub fn set_submenu(&mut self, submenu: Menu) -> &mut MenuItem {
-        self.submenu = Some(submenu);
+    pub fn set_submenu(&mut self, submenu: &Menu) -> &mut MenuItem {
+        self.submenu = Some(submenu.clone());
         self
     }
 
