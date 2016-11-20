@@ -47,6 +47,11 @@ impl FileInfo {
             nautilus_file_info_invalidate_extension_info(self.raw_file_info);
         }
     }
+
+    pub fn add_attribute(&mut self, name: &str, value: &str) -> &mut FileInfo {
+        self.attributes.insert(name.to_string(), value.to_string());
+        self
+    }
 }
 
 pub struct UpdateFileInfoOperationHandle {
