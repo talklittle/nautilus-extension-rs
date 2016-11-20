@@ -14,6 +14,16 @@ pub struct PropertyPage {
     pub raw_page: *mut GtkWidget,
 }
 
+impl PropertyPage {
+    pub fn new(name: &str, raw_label: *mut GtkWidget, raw_page: *mut GtkWidget) -> PropertyPage {
+        PropertyPage {
+            name: name.to_string(),
+            raw_label: raw_label,
+            raw_page: raw_page,
+        }
+    }
+}
+
 pub trait PropertyPageProvider : Send {
     fn get_pages(&self, files: &Vec<FileInfo>) -> Vec<PropertyPage>;
 }
