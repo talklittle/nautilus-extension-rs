@@ -8,6 +8,17 @@ pub struct Column {
     pub description: String,
 }
 
+impl Column {
+    pub fn new(name: &str, attribute: &str, label: &str, description: &str) -> Column {
+        Column {
+            name: name.to_string(),
+            attribute: attribute.to_string(),
+            label: label.to_string(),
+            description: description.to_string(),
+        }
+    }
+}
+
 pub trait ColumnProvider : Send + Sync {
     fn get_columns(&self) -> Vec<Column>;
 }
