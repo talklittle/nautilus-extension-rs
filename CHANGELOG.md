@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1 (2016-11-20)
+
+* Convenience functions: `Column::new()`, `PropertyPage::new()`, `FileInfo.add_attribute()`.
+* `Menu` and `MenuItem` functions prefer borrowing rather than moving.
+
 ## 0.2.0 (2016-11-19)
 
 * Added PropertyPageProvider.
