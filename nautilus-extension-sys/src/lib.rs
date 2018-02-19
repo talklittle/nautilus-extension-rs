@@ -100,9 +100,9 @@ extern {
 
 #[repr(C)]
 pub enum NautilusOperationResult {
-    NAUTILUS_OPERATION_COMPLETE,
-    NAUTILUS_OPERATION_FAILED,
-    NAUTILUS_OPERATION_IN_PROGRESS,
+    NautilusOperationComplete,
+    NautilusOperationFailed,
+    NautilusOperationInProgress,
 }
 
 #[cfg(test)]

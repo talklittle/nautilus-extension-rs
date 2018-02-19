@@ -87,7 +87,7 @@ macro_rules! info_provider_iface {
             };
 
             if !should_update_file_info {
-                return NautilusOperationResult::NAUTILUS_OPERATION_COMPLETE;
+                return NautilusOperationResult::NautilusOperationComplete;
             }
 
             let my_handle = Arc::new(Mutex::new(UpdateFileInfoOperationHandle { skip_response: false }));
@@ -106,7 +106,7 @@ macro_rules! info_provider_iface {
                 tx.send((Box::new(file_info), &mut *provider, &mut *closure_copy, &mut **handle)).unwrap();
             }
 
-            return NautilusOperationResult::NAUTILUS_OPERATION_IN_PROGRESS;
+            return NautilusOperationResult::NautilusOperationInProgress;
         }
 
         #[no_mangle]
@@ -147,7 +147,7 @@ macro_rules! info_provider_iface {
                         CString::from_raw(attr_value_c);
                     }
 
-                    nautilus_info_provider_update_complete_invoke(update_complete, provider, handle_ref, NautilusOperationResult::NAUTILUS_OPERATION_COMPLETE);
+                    nautilus_info_provider_update_complete_invoke(update_complete, provider, handle_ref, NautilusOperationResult::NautilusOperationComplete);
                 }
             }
         }
@@ -203,12 +203,12 @@ pub fn rust_info_provider_setters() -> Vec<fn(Box<InfoProvider>)> {
     ]
 }
 
-static mut next_info_provider_iface_index: usize = 0;
+static mut NEXT_INFO_PROVIDER_IFACE_INDEX: usize = 0;
 
 pub fn take_next_info_provider_iface_index() -> usize {
     unsafe {
-        let result = next_info_provider_iface_index;
-        next_info_provider_iface_index += 1;
+        let result = NEXT_INFO_PROVIDER_IFACE_INDEX;
+        NEXT_INFO_PROVIDER_IFACE_INDEX += 1;
         result
     }
 }
