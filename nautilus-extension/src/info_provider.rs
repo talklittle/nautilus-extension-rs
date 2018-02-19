@@ -203,12 +203,12 @@ pub fn rust_info_provider_setters() -> Vec<fn(Box<InfoProvider>)> {
     ]
 }
 
-static mut next_info_provider_iface_index: usize = 0;
+static mut NEXT_INFO_PROVIDER_IFACE_INDEX: usize = 0;
 
 pub fn take_next_info_provider_iface_index() -> usize {
     unsafe {
-        let result = next_info_provider_iface_index;
-        next_info_provider_iface_index += 1;
+        let result = NEXT_INFO_PROVIDER_IFACE_INDEX;
+        NEXT_INFO_PROVIDER_IFACE_INDEX += 1;
         result
     }
 }

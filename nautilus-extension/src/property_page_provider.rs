@@ -116,12 +116,12 @@ pub fn rust_property_page_provider_setters() -> Vec<fn(Box<PropertyPageProvider>
     ]
 }
 
-static mut next_property_page_provider_iface_index: usize = 0;
+static mut NEXT_PROPERTY_PAGE_PROVIDER_IFACE_INDEX: usize = 0;
 
 pub fn take_next_property_page_provider_iface_index() -> usize {
     unsafe {
-        let result = next_property_page_provider_iface_index;
-        next_property_page_provider_iface_index += 1;
+        let result = NEXT_PROPERTY_PAGE_PROVIDER_IFACE_INDEX;
+        NEXT_PROPERTY_PAGE_PROVIDER_IFACE_INDEX += 1;
         result
     }
 }
