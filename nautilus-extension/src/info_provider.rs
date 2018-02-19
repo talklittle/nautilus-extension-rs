@@ -147,7 +147,7 @@ macro_rules! info_provider_iface {
                         CString::from_raw(attr_value_c);
                     }
 
-                    nautilus_info_provider_update_complete_invoke(update_complete, provider, handle_ref, NautilusOperationResult::NAUTILUS_OPERATION_COMPLETE);
+                    nautilus_info_provider_update_complete_invoke(update_complete, provider, handle_ref, NautilusOperationResult::NautilusOperationComplete);
                 }
             }
         }
