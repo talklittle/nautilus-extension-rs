@@ -2,7 +2,7 @@
 
 ## 0.2.3 (2018-02-19)
 
-* Fix warnings on Rust 1.24
+* Fix warnings on Rust 1.24.
 
 ## 0.2.1 (2016-11-20)
 
