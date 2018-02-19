@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.2 (2018-02-19)
+
+* Fix warnings on Rust 1.24
+
 ## 0.2.1 (2016-11-20)
 
 * Convenience functions: `Column::new()`, `PropertyPage::new()`, `FileInfo.add_attribute()`.
