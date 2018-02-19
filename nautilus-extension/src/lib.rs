@@ -23,21 +23,21 @@ mod translate;
 #[macro_export]
 macro_rules! nautilus_module {
     ($register_fn:ident) => {
-        static mut module_type_list: [GType; 1] = [0];
+        static mut MODULE_TYPE_LIST: [GType; 1] = [0];
 
         #[no_mangle]
         pub extern "C" fn nautilus_module_initialize(module: *mut GTypeModule) {
             let module_type: GType = $register_fn(module);
             unsafe {
-                module_type_list[0] = module_type;
+                MODULE_TYPE_LIST[0] = module_type;
             }
         }
 
         #[no_mangle]
         pub extern "C" fn nautilus_module_list_types(types: *mut *const GType, num_types: *mut c_int) {
             unsafe {
-                *types = module_type_list.as_ptr();
-                *num_types = module_type_list.len() as c_int;
+                *types = MODULE_TYPE_LIST.as_ptr();
+                *num_types = MODULE_TYPE_LIST.len() as c_int;
             }
         }
 
