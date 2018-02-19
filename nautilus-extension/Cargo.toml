@@ -1,6 +1,6 @@
 [package]
 name = "nautilus-extension"
-version = "0.2.3"
+version = "0.3.0"
 authors = ["Andrew Shu <talklittle@gmail.com>"]
 description = "Safe Rust wrapper for libnautilus-extension, to extend GNOME Nautilus file browser (aka Files in Ubuntu)"
 repository = "https://github.com/talklittle/nautilus-extension-rs"
@@ -17,4 +17,4 @@ gobject-sys = "0.5.0"
 gtk-sys = "0.5.0"
 lazy_static = "1.0.0"
 libc = "0.2"
-nautilus-extension-sys = "0.2.2"
+nautilus-extension-sys = "0.3.0"

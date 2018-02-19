@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.0 (2018-02-19)
+
+* Require GTK+ 3.18 and Rust 1.24.
+
 ## 0.2.3 (2018-02-19)
 
 * Fix warnings on Rust 1.24.
