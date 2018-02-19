@@ -87,7 +87,7 @@ macro_rules! info_provider_iface {
             };
 
             if !should_update_file_info {
-                return NautilusOperationResult::NAUTILUS_OPERATION_COMPLETE;
+                return NautilusOperationResult::NautilusOperationComplete;
             }
 
             let my_handle = Arc::new(Mutex::new(UpdateFileInfoOperationHandle { skip_response: false }));
@@ -106,7 +106,7 @@ macro_rules! info_provider_iface {
                 tx.send((Box::new(file_info), &mut *provider, &mut *closure_copy, &mut **handle)).unwrap();
             }
 
-            return NautilusOperationResult::NAUTILUS_OPERATION_IN_PROGRESS;
+            return NautilusOperationResult::NautilusOperationInProgress;
         }
 
         #[no_mangle]
