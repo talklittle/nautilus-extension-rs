@@ -52,7 +52,7 @@ impl NautilusModule {
     pub fn add_column_provider<'a, T: ColumnProvider + 'static>(&'a mut self, column_provider: T) -> &'a mut NautilusModule {
         let index = take_next_column_provider_iface_index();
         let iface_init_fn = column_provider_iface_externs()[index];
-        let ref rust_provider_setter = rust_column_provider_setters()[index];
+        let rust_provider_setter = &rust_column_provider_setters()[index];
 
         let column_provider_iface_info = GInterfaceInfo {
             interface_init: Some(iface_init_fn),
@@ -70,7 +70,7 @@ impl NautilusModule {
     pub fn add_info_provider<'a, T: InfoProvider + 'static>(&'a mut self, info_provider: T) -> &'a mut NautilusModule {
         let index = take_next_info_provider_iface_index();
         let iface_init_fn = info_provider_iface_externs()[index];
-        let ref rust_provider_setter = rust_info_provider_setters()[index];
+        let rust_provider_setter = &rust_info_provider_setters()[index];
 
         let info_provider_iface_info = GInterfaceInfo {
             interface_init: Some(iface_init_fn),
@@ -88,7 +88,7 @@ impl NautilusModule {
     pub fn add_menu_provider<'a, T: MenuProvider + 'static>(&'a mut self, menu_provider: T) -> &'a mut NautilusModule {
         let index = take_next_menu_provider_iface_index();
         let iface_init_fn = menu_provider_iface_externs()[index];
-        let ref rust_provider_setter = rust_menu_provider_setters()[index];
+        let rust_provider_setter = &rust_menu_provider_setters()[index];
 
         let menu_provider_iface_info = GInterfaceInfo {
             interface_init: Some(iface_init_fn),
@@ -106,7 +106,7 @@ impl NautilusModule {
     pub fn add_property_page_provider<'a, T: PropertyPageProvider + 'static>(&'a mut self, property_page_provider: T) -> &'a mut NautilusModule {
         let index = take_next_property_page_provider_iface_index();
         let iface_init_fn = property_page_provider_iface_externs()[index];
-        let ref rust_provider_setter = rust_property_page_provider_setters()[index];
+        let rust_provider_setter = &rust_property_page_provider_setters()[index];
 
         let property_page_provider_iface_info = GInterfaceInfo {
             interface_init: Some(iface_init_fn),

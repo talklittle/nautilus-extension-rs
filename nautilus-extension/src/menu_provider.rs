@@ -111,7 +111,7 @@ macro_rules! menu_provider_iface {
 fn menu_to_g_list(menu: &Menu, files_user_data: *mut c_void) -> *mut GList {
     let mut raw_file_items: *mut GList = ptr::null_mut();
 
-    let ref menu_items = menu.menu_items;
+    let menu_items = &menu.menu_items;
 
     for menu_item in menu_items {
         let name = menu_item.name.clone();
@@ -132,7 +132,7 @@ fn menu_to_g_list(menu: &Menu, files_user_data: *mut c_void) -> *mut GList {
             let raw_menuitem = nautilus_menu_item_new(raw_name, raw_label, raw_tip, raw_icon);
             raw_file_items = g_list_append(raw_file_items, raw_menuitem as *mut c_void);
 
-            let ref submenu = menu_item.submenu;
+            let submenu = &menu_item.submenu;
             match *submenu {
                 Some(ref submenu) => process_submenu(raw_menuitem, &submenu, files_user_data),
                 None => (),
@@ -159,7 +159,7 @@ fn menu_to_g_list(menu: &Menu, files_user_data: *mut c_void) -> *mut GList {
 fn menu_to_raw(menu: &Menu, files_user_data: *mut c_void) -> *mut NautilusMenu {
     let raw_menu = unsafe { nautilus_menu_new() };
 
-    let ref menu_items = menu.menu_items;
+    let menu_items = &menu.menu_items;
 
     for menu_item in menu_items {
         let name = menu_item.name.clone();
@@ -180,7 +180,7 @@ fn menu_to_raw(menu: &Menu, files_user_data: *mut c_void) -> *mut NautilusMenu {
             let raw_menuitem = nautilus_menu_item_new(raw_name, raw_label, raw_tip, raw_icon);
             nautilus_menu_append_item(raw_menu, raw_menuitem);
 
-            let ref submenu = menu_item.submenu;
+            let submenu = &menu_item.submenu;
             match *submenu {
                 Some(ref submenu) => process_submenu(raw_menuitem, &submenu, files_user_data),
                 None => (),

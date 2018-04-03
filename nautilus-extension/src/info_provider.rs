@@ -29,14 +29,14 @@ impl FileInfo {
     }
 
     pub fn get_uri(&self) -> String {
-        let ref raw_file_info = self.raw_file_info;
+        let raw_file_info = &self.raw_file_info;
         unsafe {
             CStr::from_ptr(nautilus_file_info_get_uri(*raw_file_info)).to_string_lossy().into_owned()
         }
     }
 
     pub fn get_uri_scheme(&self) -> String {
-        let ref raw_file_info = self.raw_file_info;
+        let raw_file_info = &self.raw_file_info;
         unsafe {
             CStr::from_ptr(nautilus_file_info_get_uri_scheme(*raw_file_info)).to_string_lossy().into_owned()
         }
@@ -134,7 +134,7 @@ macro_rules! info_provider_iface {
 
             if !my_handle.lock().unwrap().skip_response {
                 let file_info = file_info.as_mut();
-                let ref attributes = file_info.attributes;
+                let attributes = &file_info.attributes;
                 unsafe {
                     for (attr_name, attr_value) in attributes {
                         let attr_name_c = CString::new(attr_name.as_str()).unwrap().into_raw();
