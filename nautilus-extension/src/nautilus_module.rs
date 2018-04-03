@@ -8,6 +8,7 @@ use libc::c_char;
 use menu_provider::{MenuProvider, take_next_menu_provider_iface_index, menu_provider_iface_externs, rust_menu_provider_setters};
 use nautilus_ffi::{nautilus_column_provider_get_type, nautilus_info_provider_get_type, nautilus_menu_provider_get_type, nautilus_property_page_provider_get_type};
 use property_page_provider::{PropertyPageProvider, take_next_property_page_provider_iface_index, property_page_provider_iface_externs, rust_property_page_provider_setters};
+use std::borrow::Cow;
 use std::ffi::CString;
 use std::mem;
 use std::ptr;
@@ -30,7 +31,7 @@ const EMPTY_VALUE_TABLE: GTypeValueTable = GTypeValueTable {
 
 pub struct NautilusModule {
     module: *mut GTypeModule,
-    name: String,
+    name: Cow<'static, str>,
     column_provider_iface_infos: Vec<GInterfaceInfo>,
     info_provider_iface_infos: Vec<GInterfaceInfo>,
     menu_provider_iface_infos: Vec<GInterfaceInfo>,
@@ -38,10 +39,10 @@ pub struct NautilusModule {
 }
 
 impl NautilusModule {
-    pub fn new(module: *mut GTypeModule, name: &str) -> NautilusModule {
+    pub fn new<S: Into<Cow<'static, str>>>(module: *mut GTypeModule, name: S) -> NautilusModule {
         NautilusModule {
             module: module,
-            name: name.to_string(),
+            name: name.into(),
             column_provider_iface_infos: Vec::new(),
             info_provider_iface_infos: Vec::new(),
             menu_provider_iface_infos: Vec::new(),
@@ -122,7 +123,7 @@ impl NautilusModule {
     }
 
     pub fn register(&self) -> GType {
-        let name = CString::new(self.name.as_str()).unwrap();
+        let name = CString::new(&self.name as &str).unwrap();
 
         let info = GTypeInfo {
             class_size: mem::size_of::<NautilusExtensionClass>() as u16,

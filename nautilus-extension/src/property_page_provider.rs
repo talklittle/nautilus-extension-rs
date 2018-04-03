@@ -3,21 +3,22 @@ use gtk_ffi::GtkWidget;
 use info_provider::FileInfo;
 use libc::c_void;
 use nautilus_ffi::{NautilusPropertyPageProvider, nautilus_property_page_new};
+use std::borrow::Cow;
 use std::ffi::CString;
 use std::ptr;
 use std::sync::Mutex;
 use translate::file_info_vec_from_g_list;
 
 pub struct PropertyPage {
-    pub name: String,
+    pub name: Cow<'static, str>,
     pub raw_label: *mut GtkWidget,
     pub raw_page: *mut GtkWidget,
 }
 
 impl PropertyPage {
-    pub fn new(name: &str, raw_label: *mut GtkWidget, raw_page: *mut GtkWidget) -> PropertyPage {
+    pub fn new<S: Into<Cow<'static, str>>>(name: S, raw_label: *mut GtkWidget, raw_page: *mut GtkWidget) -> PropertyPage {
         PropertyPage {
-            name: name.to_string(),
+            name: name.into(),
             raw_label: raw_label,
             raw_page: raw_page,
         }
@@ -48,7 +49,7 @@ macro_rules! property_page_provider_iface {
             };
 
             for page in pages {
-                let name = CString::new(page.name).unwrap().into_raw();
+                let name = CString::new(&page.name as &str).unwrap().into_raw();
                 let label = page.raw_label;
                 let page_widget = page.raw_page;
 

@@ -5,6 +5,7 @@ use info_provider::FileInfo;
 use libc::c_void;
 use nautilus_ffi::{NautilusMenu, NautilusMenuItem, NautilusMenuProviderIface};
 use nautilus_ffi::{nautilus_menu_new, nautilus_menu_append_item, nautilus_menu_item_new, nautilus_menu_item_set_submenu};
+use std::borrow::Cow;
 use std::ffi::CString;
 use std::mem;
 use std::ptr;
@@ -26,28 +27,112 @@ impl Menu {
             menu_items: menu_items.clone(),
         }
     }
+
+    fn to_g_list(&self, files_user_data: *mut c_void) -> *mut GList {
+        let mut raw_file_items: *mut GList = ptr::null_mut();
+
+        for menu_item in &self.menu_items {
+            let raw_name = CString::new(&menu_item.name as &str).unwrap().into_raw();
+            let raw_label = CString::new(&menu_item.label as &str).unwrap().into_raw();
+            let raw_tip = CString::new(&menu_item.tip as &str).unwrap().into_raw();
+            let raw_icon =
+                match menu_item.icon {
+                    Some(ref ic) => CString::new(ic as &str).unwrap().into_raw(),
+                    None => ptr::null_mut(),
+                };
+
+            unsafe {
+                let raw_menuitem = nautilus_menu_item_new(raw_name, raw_label, raw_tip, raw_icon);
+                raw_file_items = g_list_append(raw_file_items, raw_menuitem as *mut c_void);
+
+                let submenu = &menu_item.submenu;
+                match *submenu {
+                    Some(ref submenu) => process_submenu(raw_menuitem, &submenu, files_user_data),
+                    None => (),
+                }
+
+                match menu_item.activate_fn {
+                    Some(activate_fn) => connect_activate_signal(raw_menuitem, activate_fn, files_user_data),
+                    None => (),
+                }
+
+                // deallocate CStrings
+                CString::from_raw(raw_name);
+                CString::from_raw(raw_label);
+                CString::from_raw(raw_tip);
+                if !raw_icon.is_null() {
+                    CString::from_raw(raw_icon);
+                }
+            }
+        }
+
+        raw_file_items
+    }
+
+    fn to_raw(&self, files_user_data: *mut c_void) -> *mut NautilusMenu {
+        let raw_menu = unsafe { nautilus_menu_new() };
+
+        let menu_items = &self.menu_items;
+
+        for menu_item in menu_items {
+            let raw_name = CString::new(&menu_item.name as &str).unwrap().into_raw();
+            let raw_label = CString::new(&menu_item.label as &str).unwrap().into_raw();
+            let raw_tip = CString::new(&menu_item.tip as &str).unwrap().into_raw();
+            let raw_icon =
+                match menu_item.icon {
+                    Some(ref icon) => CString::new(icon as &str).unwrap().into_raw(),
+                    None => ptr::null_mut(),
+                };
+
+            unsafe {
+                let raw_menuitem = nautilus_menu_item_new(raw_name, raw_label, raw_tip, raw_icon);
+                nautilus_menu_append_item(raw_menu, raw_menuitem);
+
+                let submenu = &menu_item.submenu;
+                match *submenu {
+                    Some(ref submenu) => process_submenu(raw_menuitem, &submenu, files_user_data),
+                    None => (),
+                }
+
+                match menu_item.activate_fn {
+                    Some(activate_fn) => connect_activate_signal(raw_menuitem, activate_fn, files_user_data),
+                    None => (),
+                }
+
+                // deallocate CStrings
+                CString::from_raw(raw_name);
+                CString::from_raw(raw_label);
+                CString::from_raw(raw_tip);
+                if !raw_icon.is_null() {
+                    CString::from_raw(raw_icon);
+                }
+            }
+        }
+
+        raw_menu
+    }
 }
 
 #[derive(Clone)]
 pub struct MenuItem {
-    name: String,
-    label: String,
-    tip: String,
-    icon: Option<String>,
+    name: Cow<'static, str>,
+    label: Cow<'static, str>,
+    tip: Cow<'static, str>,
+    icon: Option<Cow<'static, str>>,
     submenu: Option<Menu>,
     activate_fn: Option<unsafe extern "C" fn(*mut GObject, gpointer)>,
 }
 
 impl MenuItem {
-    pub fn new(name: &str, label: &str, tip: &str, icon: Option<&str>) -> MenuItem {
+    pub fn new<S: Into<Cow<'static, str>>>(name: S, label: S, tip: S, icon: Option<S>) -> MenuItem {
         let icon = match icon {
-            Some(s) => Some(s.to_string()),
+            Some(s) => Some(s.into()),
             None => None,
         };
         MenuItem {
-            name: name.to_string(),
-            label: label.to_string(),
-            tip: tip.to_string(),
+            name: name.into(),
+            label: label.into(),
+            tip: tip.into(),
             icon: icon,
             submenu: None,
             activate_fn: None,
@@ -95,7 +180,7 @@ macro_rules! menu_provider_iface {
                 menu_items: file_items,
             };
 
-            menu_to_g_list(&top_menu, Box::into_raw(Box::new(files_vec)) as *mut c_void)
+            top_menu.to_g_list(Box::into_raw(Box::new(files_vec)) as *mut c_void)
         }
 
         pub fn $set_rust_provider(menu_provider: Box<MenuProvider>) {
@@ -108,104 +193,8 @@ macro_rules! menu_provider_iface {
     }
 }
 
-fn menu_to_g_list(menu: &Menu, files_user_data: *mut c_void) -> *mut GList {
-    let mut raw_file_items: *mut GList = ptr::null_mut();
-
-    let menu_items = &menu.menu_items;
-
-    for menu_item in menu_items {
-        let name = menu_item.name.clone();
-        let label = menu_item.label.clone();
-        let tip = menu_item.tip.clone();
-        let icon = menu_item.icon.clone();
-
-        let raw_name = CString::new(name).unwrap().into_raw();
-        let raw_label = CString::new(label).unwrap().into_raw();
-        let raw_tip = CString::new(tip).unwrap().into_raw();
-        let raw_icon =
-            match icon {
-                Some(ic) => CString::new(ic).unwrap().into_raw(),
-                None => ptr::null_mut(),
-            };
-
-        unsafe {
-            let raw_menuitem = nautilus_menu_item_new(raw_name, raw_label, raw_tip, raw_icon);
-            raw_file_items = g_list_append(raw_file_items, raw_menuitem as *mut c_void);
-
-            let submenu = &menu_item.submenu;
-            match *submenu {
-                Some(ref submenu) => process_submenu(raw_menuitem, &submenu, files_user_data),
-                None => (),
-            }
-
-            match menu_item.activate_fn {
-                Some(activate_fn) => connect_activate_signal(raw_menuitem, activate_fn, files_user_data),
-                None => (),
-            }
-
-            // deallocate CStrings
-            CString::from_raw(raw_name);
-            CString::from_raw(raw_label);
-            CString::from_raw(raw_tip);
-            if !raw_icon.is_null() {
-                CString::from_raw(raw_icon);
-            }
-        }
-    }
-
-    raw_file_items
-}
-
-fn menu_to_raw(menu: &Menu, files_user_data: *mut c_void) -> *mut NautilusMenu {
-    let raw_menu = unsafe { nautilus_menu_new() };
-
-    let menu_items = &menu.menu_items;
-
-    for menu_item in menu_items {
-        let name = menu_item.name.clone();
-        let label = menu_item.label.clone();
-        let tip = menu_item.tip.clone();
-        let icon = menu_item.icon.clone();
-
-        let raw_name = CString::new(name).unwrap().into_raw();
-        let raw_label = CString::new(label).unwrap().into_raw();
-        let raw_tip = CString::new(tip).unwrap().into_raw();
-        let raw_icon =
-            match icon {
-                Some(icon) => CString::new(icon).unwrap().into_raw(),
-                None => ptr::null_mut(),
-            };
-
-        unsafe {
-            let raw_menuitem = nautilus_menu_item_new(raw_name, raw_label, raw_tip, raw_icon);
-            nautilus_menu_append_item(raw_menu, raw_menuitem);
-
-            let submenu = &menu_item.submenu;
-            match *submenu {
-                Some(ref submenu) => process_submenu(raw_menuitem, &submenu, files_user_data),
-                None => (),
-            }
-
-            match menu_item.activate_fn {
-                Some(activate_fn) => connect_activate_signal(raw_menuitem, activate_fn, files_user_data),
-                None => (),
-            }
-
-            // deallocate CStrings
-            CString::from_raw(raw_name);
-            CString::from_raw(raw_label);
-            CString::from_raw(raw_tip);
-            if !raw_icon.is_null() {
-                CString::from_raw(raw_icon);
-            }
-        }
-    }
-
-    raw_menu
-}
-
 fn process_submenu(raw_menuitem: *mut NautilusMenuItem, submenu: &Menu, files_user_data: *mut c_void) {
-    let raw_submenu = menu_to_raw(submenu, files_user_data);
+    let raw_submenu = submenu.to_raw(files_user_data);
     unsafe {
         nautilus_menu_item_set_submenu(raw_menuitem, raw_submenu);
     }

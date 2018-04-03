@@ -1,20 +1,21 @@
 use glib_ffi::{GList, gpointer};
+use std::borrow::Cow;
 use std::sync::Mutex;
 
 pub struct Column {
-    pub name: String,
-    pub attribute: String,
-    pub label: String,
-    pub description: String,
+    pub name: Cow<'static, str>,
+    pub attribute: Cow<'static, str>,
+    pub label: Cow<'static, str>,
+    pub description: Cow<'static, str>,
 }
 
 impl Column {
-    pub fn new(name: &str, attribute: &str, label: &str, description: &str) -> Column {
+    pub fn new<S: Into<Cow<'static, str>>>(name: S, attribute: S, label: S, description: S) -> Column {
         Column {
-            name: name.to_string(),
-            attribute: attribute.to_string(),
-            label: label.to_string(),
-            description: description.to_string(),
+            name: name.into(),
+            attribute: attribute.into(),
+            label: label.into(),
+            description: description.into(),
         }
     }
 }
@@ -49,10 +50,10 @@ macro_rules! column_provider_iface {
             };
 
             for column in columns {
-                let name = CString::new(column.name).unwrap().into_raw();
-                let attribute = CString::new(column.attribute).unwrap().into_raw();
-                let label = CString::new(column.label).unwrap().into_raw();
-                let description = CString::new(column.description).unwrap().into_raw();
+                let name = CString::new(&column.name as &str).unwrap().into_raw();
+                let attribute = CString::new(&column.attribute as &str).unwrap().into_raw();
+                let label = CString::new(&column.label as &str).unwrap().into_raw();
+                let description = CString::new(&column.description as &str).unwrap().into_raw();
 
                 unsafe {
                     let column_c = nautilus_column_new(name, attribute, label, description);
