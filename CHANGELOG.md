@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1 (2018-04-03)
+
+* Minor performance improvement using `Cow` instead of `String` when possible.
+
 ## 0.3.0 (2018-02-19)
 
 * Require GTK+ 3.18 and Rust 1.24.
