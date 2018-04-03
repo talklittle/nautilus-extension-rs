@@ -87,7 +87,7 @@ macro_rules! menu_provider_iface {
             let file_items: Vec<MenuItem> =
                 match *$rust_provider.lock().unwrap() {
                     Some(ref p) => p.get_file_items(window, &files_vec),
-                    None => vec![],
+                    None => Vec::new(),
                 };
 
             // dummy top-level Menu for easy recursion

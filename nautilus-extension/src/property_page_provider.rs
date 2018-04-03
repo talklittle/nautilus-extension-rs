@@ -44,7 +44,7 @@ macro_rules! property_page_provider_iface {
 
             let pages = match *$rust_provider.lock().unwrap() {
                 Some(ref p) => p.get_pages(&file_info_vec_from_g_list(raw_files)),
-                None => vec![],
+                None => Vec::new(),
             };
 
             for page in pages {

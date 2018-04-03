@@ -42,10 +42,10 @@ impl NautilusModule {
         NautilusModule {
             module: module,
             name: name.to_string(),
-            column_provider_iface_infos: vec![],
-            info_provider_iface_infos: vec![],
-            menu_provider_iface_infos: vec![],
-            property_page_provider_iface_infos: vec![],
+            column_provider_iface_infos: Vec::new(),
+            info_provider_iface_infos: Vec::new(),
+            menu_provider_iface_infos: Vec::new(),
+            property_page_provider_iface_infos: Vec::new(),
         }
     }
 

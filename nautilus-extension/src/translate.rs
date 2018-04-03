@@ -3,7 +3,7 @@ use info_provider::FileInfo;
 use nautilus_ffi::NautilusFileInfo;
 
 pub fn file_info_vec_from_g_list(list: *mut GList) -> Vec<FileInfo> {
-    let mut vec = vec![];
+    let mut vec = Vec::new();
     unsafe {
         let length = g_list_length(list);
         for i in 0..length {

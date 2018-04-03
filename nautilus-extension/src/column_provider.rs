@@ -45,7 +45,7 @@ macro_rules! column_provider_iface {
 
             let columns = match *$rust_provider.lock().unwrap() {
                 Some(ref p) => p.get_columns(),
-                None => vec![],
+                None => Vec::new(),
             };
 
             for column in columns {
