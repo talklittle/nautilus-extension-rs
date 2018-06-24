@@ -13,7 +13,7 @@ for a usage example.
 
 * Nautilus 3
 * Gtk+ 3.18+
-* Rust 1.24+
+* Rust 1.27+
 
 ## Release notes
 
