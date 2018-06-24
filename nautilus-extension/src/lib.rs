@@ -1,3 +1,5 @@
+#![deny(bare_trait_objects)]
+
 extern crate gio_sys as gio_ffi;
 extern crate glib_sys as glib_ffi;
 extern crate gobject_sys as gobject_ffi;

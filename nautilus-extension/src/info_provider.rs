@@ -152,12 +152,12 @@ macro_rules! info_provider_iface {
             }
         }
 
-        pub fn $set_rust_provider(info_provider: Box<InfoProvider>) {
+        pub fn $set_rust_provider(info_provider: Box<dyn InfoProvider>) {
             *$rust_provider.lock().unwrap() = Some(info_provider);
         }
 
         lazy_static! {
-            static ref $rust_provider: Mutex<Option<Box<InfoProvider>>> = Mutex::new(None);
+            static ref $rust_provider: Mutex<Option<Box<dyn InfoProvider>>> = Mutex::new(None);
         }
     }
 }
@@ -188,7 +188,7 @@ pub fn info_provider_iface_externs() -> Vec<unsafe extern "C" fn(gpointer, gpoin
     ]
 }
 
-pub fn rust_info_provider_setters() -> Vec<fn(Box<InfoProvider>)> {
+pub fn rust_info_provider_setters() -> Vec<fn(Box<dyn InfoProvider>)> {
     vec![
         set_info_provider_0,
         set_info_provider_1,

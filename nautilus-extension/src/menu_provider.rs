@@ -183,12 +183,12 @@ macro_rules! menu_provider_iface {
             top_menu.to_g_list(Box::into_raw(Box::new(files_vec)) as *mut c_void)
         }
 
-        pub fn $set_rust_provider(menu_provider: Box<MenuProvider>) {
+        pub fn $set_rust_provider(menu_provider: Box<dyn MenuProvider>) {
             *$rust_provider.lock().unwrap() = Some(menu_provider);
         }
 
         lazy_static! {
-            static ref $rust_provider: Mutex<Option<Box<MenuProvider>>> = Mutex::new(None);
+            static ref $rust_provider: Mutex<Option<Box<dyn MenuProvider>>> = Mutex::new(None);
         }
     }
 }
@@ -243,7 +243,7 @@ pub fn menu_provider_iface_externs() -> Vec<unsafe extern "C" fn(gpointer, gpoin
     ]
 }
 
-pub fn rust_menu_provider_setters() -> Vec<fn(Box<MenuProvider>)> {
+pub fn rust_menu_provider_setters() -> Vec<fn(Box<dyn MenuProvider>)> {
     vec![
         set_menu_provider_0,
         set_menu_provider_1,

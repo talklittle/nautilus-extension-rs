@@ -70,12 +70,12 @@ macro_rules! column_provider_iface {
             columns_g_list
         }
 
-        pub fn $set_rust_provider(column_provider: Box<ColumnProvider>) {
+        pub fn $set_rust_provider(column_provider: Box<dyn ColumnProvider>) {
             *$rust_provider.lock().unwrap() = Some(column_provider);
         }
 
         lazy_static! {
-            static ref $rust_provider: Mutex<Option<Box<ColumnProvider>>> = Mutex::new(None);
+            static ref $rust_provider: Mutex<Option<Box<dyn ColumnProvider>>> = Mutex::new(None);
         }
     }
 }
@@ -107,7 +107,7 @@ pub fn column_provider_iface_externs() -> Vec<unsafe extern "C" fn(gpointer, gpo
     ]
 }
 
-pub fn rust_column_provider_setters() -> Vec<fn(Box<ColumnProvider>)> {
+pub fn rust_column_provider_setters() -> Vec<fn(Box<dyn ColumnProvider>)> {
     vec![
         set_column_provider_0,
         set_column_provider_1,

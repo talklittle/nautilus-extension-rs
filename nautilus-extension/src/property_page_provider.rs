@@ -65,12 +65,12 @@ macro_rules! property_page_provider_iface {
             pages_g_list
         }
 
-        pub fn $set_rust_provider(page_provider: Box<PropertyPageProvider>) {
+        pub fn $set_rust_provider(page_provider: Box<dyn PropertyPageProvider>) {
             *$rust_provider.lock().unwrap() = Some(page_provider);
         }
 
         lazy_static! {
-            static ref $rust_provider: Mutex<Option<Box<PropertyPageProvider>>> = Mutex::new(None);
+            static ref $rust_provider: Mutex<Option<Box<dyn PropertyPageProvider>>> = Mutex::new(None);
         }
     }
 }
@@ -102,7 +102,7 @@ pub fn property_page_provider_iface_externs() -> Vec<unsafe extern "C" fn(gpoint
     ]
 }
 
-pub fn rust_property_page_provider_setters() -> Vec<fn(Box<PropertyPageProvider>)> {
+pub fn rust_property_page_provider_setters() -> Vec<fn(Box<dyn PropertyPageProvider>)> {
     vec![
         set_property_page_provider_0,
         set_property_page_provider_1,
