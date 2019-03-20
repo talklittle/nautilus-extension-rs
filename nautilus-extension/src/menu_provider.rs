@@ -10,6 +10,7 @@ use std::ffi::CString;
 use std::mem;
 use std::ptr;
 use std::sync::Mutex;
+use std::sync::atomic::{AtomicUsize, Ordering, ATOMIC_USIZE_INIT};
 use translate::file_info_vec_from_g_list;
 
 pub trait MenuProvider : Send + Sync {
@@ -258,12 +259,8 @@ pub fn rust_menu_provider_setters() -> Vec<fn(Box<dyn MenuProvider>)> {
     ]
 }
 
-static mut NEXT_MENU_PROVIDER_IFACE_INDEX: usize = 0;
+static NEXT_MENU_PROVIDER_IFACE_INDEX: AtomicUsize = ATOMIC_USIZE_INIT;
 
 pub fn take_next_menu_provider_iface_index() -> usize {
-    unsafe {
-        let result = NEXT_MENU_PROVIDER_IFACE_INDEX;
-        NEXT_MENU_PROVIDER_IFACE_INDEX += 1;
-        result
-    }
+    NEXT_MENU_PROVIDER_IFACE_INDEX.fetch_add(1, Ordering::SeqCst)
 }
