@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.0 (2019-04-18)
+
+* Replace `static mut` with safer alternatives.
+* Require Rust 1.27.
+
 ## 0.3.1 (2018-04-03)
 
 * Minor performance improvement using `Cow` instead of `String` when possible.
