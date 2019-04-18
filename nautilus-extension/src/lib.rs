@@ -11,6 +11,7 @@ extern crate nautilus_extension_sys as nautilus_ffi;
 
 pub use column_provider::{Column, ColumnProvider};
 pub use info_provider::{FileInfo, InfoProvider};
+pub use lazy_static::lazy_static;
 pub use menu_provider::{Menu, MenuItem, MenuProvider};
 pub use nautilus_module::NautilusModule;
 pub use property_page_provider::{PropertyPage, PropertyPageProvider};
@@ -25,21 +26,25 @@ mod translate;
 #[macro_export]
 macro_rules! nautilus_module {
     ($register_fn:ident) => {
-        static mut MODULE_TYPE_LIST: [GType; 1] = [0];
+        use std::sync::Mutex as NautilusExtensionMutex;
+        use nautilus_extension::lazy_static as nautilus_extension_lazy_static;
+        nautilus_extension_lazy_static! {
+            static ref MODULE_TYPE_LIST: NautilusExtensionMutex<Vec<GType>> = NautilusExtensionMutex::new(Vec::new());
+        }
 
         #[no_mangle]
         pub extern "C" fn nautilus_module_initialize(module: *mut GTypeModule) {
             let module_type: GType = $register_fn(module);
-            unsafe {
-                MODULE_TYPE_LIST[0] = module_type;
-            }
+            MODULE_TYPE_LIST.lock().unwrap().push(module_type);
         }
 
         #[no_mangle]
         pub extern "C" fn nautilus_module_list_types(types: *mut *const GType, num_types: *mut c_int) {
+            let list_ptr = MODULE_TYPE_LIST.lock().unwrap().as_ptr();
+            let list_len = MODULE_TYPE_LIST.lock().unwrap().len() as c_int;
             unsafe {
-                *types = MODULE_TYPE_LIST.as_ptr();
-                *num_types = MODULE_TYPE_LIST.len() as c_int;
+                *types = list_ptr;
+                *num_types = list_len;
             }
         }
 
