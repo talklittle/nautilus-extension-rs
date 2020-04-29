@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.0 (2020-04-29)
+
+* Replace deprecated `ATOMIC_USIZE_INIT`.
+* Update dependencies
+
 ## 0.4.0 (2019-04-18)
 
 * Replace `static mut` with safer alternatives.

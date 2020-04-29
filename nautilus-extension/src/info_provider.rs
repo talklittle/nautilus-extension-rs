@@ -6,7 +6,7 @@ use nautilus_ffi::nautilus_file_info_invalidate_extension_info;
 use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::sync::{Arc, Mutex};
-use std::sync::atomic::{AtomicUsize, Ordering, ATOMIC_USIZE_INIT};
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 pub trait InfoProvider : Send + Sync {
     fn should_update_file_info(&self, &FileInfo) -> bool;
@@ -204,7 +204,7 @@ pub fn rust_info_provider_setters() -> Vec<fn(Box<dyn InfoProvider>)> {
     ]
 }
 
-static NEXT_INFO_PROVIDER_IFACE_INDEX: AtomicUsize = ATOMIC_USIZE_INIT;
+static NEXT_INFO_PROVIDER_IFACE_INDEX: AtomicUsize = AtomicUsize::new(0);
 
 pub fn take_next_info_provider_iface_index() -> usize {
     NEXT_INFO_PROVIDER_IFACE_INDEX.fetch_add(1, Ordering::SeqCst)
