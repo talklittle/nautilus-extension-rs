@@ -7,7 +7,7 @@ use std::borrow::Cow;
 use std::ffi::CString;
 use std::ptr;
 use std::sync::Mutex;
-use std::sync::atomic::{AtomicUsize, Ordering, ATOMIC_USIZE_INIT};
+use std::sync::atomic::{AtomicUsize, Ordering};
 use translate::file_info_vec_from_g_list;
 
 pub struct PropertyPage {
@@ -118,7 +118,7 @@ pub fn rust_property_page_provider_setters() -> Vec<fn(Box<dyn PropertyPageProvi
     ]
 }
 
-static NEXT_PROPERTY_PAGE_PROVIDER_IFACE_INDEX: AtomicUsize = ATOMIC_USIZE_INIT;
+static NEXT_PROPERTY_PAGE_PROVIDER_IFACE_INDEX: AtomicUsize = AtomicUsize::new(0);
 
 pub fn take_next_property_page_provider_iface_index() -> usize {
     NEXT_PROPERTY_PAGE_PROVIDER_IFACE_INDEX.fetch_add(1, Ordering::SeqCst)

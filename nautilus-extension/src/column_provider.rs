@@ -1,7 +1,7 @@
 use glib_ffi::{GList, gpointer};
 use std::borrow::Cow;
 use std::sync::Mutex;
-use std::sync::atomic::{AtomicUsize, Ordering, ATOMIC_USIZE_INIT};
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 pub struct Column {
     pub name: Cow<'static, str>,
@@ -123,7 +123,7 @@ pub fn rust_column_provider_setters() -> Vec<fn(Box<dyn ColumnProvider>)> {
     ]
 }
 
-static NEXT_COLUMN_PROVIDER_IFACE_INDEX: AtomicUsize = ATOMIC_USIZE_INIT;
+static NEXT_COLUMN_PROVIDER_IFACE_INDEX: AtomicUsize = AtomicUsize::new(0);
 
 pub fn take_next_column_provider_iface_index() -> usize {
     NEXT_COLUMN_PROVIDER_IFACE_INDEX.fetch_add(1, Ordering::SeqCst)
