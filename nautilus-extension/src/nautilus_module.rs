@@ -1,6 +1,6 @@
 use column_provider::{ColumnProvider, take_next_column_provider_iface_index, column_provider_iface_externs, rust_column_provider_setters};
 use glib_ffi::GType;
-use gobject_ffi::{GInterfaceInfo, GObjectClass, G_CONNECT_AFTER, GTypeInfo, GTypeModule, GTypeQuery, GTypeValueTable};
+use gobject_ffi::{GInterfaceInfo, GObjectClass, GTypeInfo, GTypeModule, GTypeQuery, GTypeValueTable};
 use gobject_ffi::{g_type_module_add_interface, g_type_module_register_type, g_type_query};
 use gobject_ffi::G_TYPE_OBJECT;
 use info_provider::{InfoProvider, take_next_info_provider_iface_index, info_provider_iface_externs, rust_info_provider_setters};
@@ -139,7 +139,7 @@ impl NautilusModule {
         };
 
         unsafe {
-            let module_type = g_type_module_register_type(self.module, G_TYPE_OBJECT, name.as_ptr(), &info, G_CONNECT_AFTER);
+            let module_type = g_type_module_register_type(self.module, G_TYPE_OBJECT, name.as_ptr(), &info, 0);
 
             for column_provider_iface_info in &self.column_provider_iface_infos {
                 g_type_module_add_interface(self.module, module_type, nautilus_column_provider_get_type(), column_provider_iface_info);
