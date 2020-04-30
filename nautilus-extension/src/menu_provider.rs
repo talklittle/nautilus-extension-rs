@@ -1,5 +1,5 @@
 use glib_ffi::{GList, g_list_append, gpointer};
-use gobject_ffi::{G_CONNECT_AFTER, GObject, g_signal_connect_data};
+use gobject_ffi::{GObject, g_signal_connect_data};
 use gtk_ffi::GtkWidget;
 use info_provider::FileInfo;
 use libc::c_void;
@@ -211,8 +211,7 @@ fn connect_activate_signal(raw_menuitem: *mut NautilusMenuItem, activate_fn: uns
             Some(mem::transmute(activate_fn as *mut c_void)),
             data as *mut c_void,
             None,
-            G_CONNECT_AFTER
-            // GConnectFlags::empty()
+            0
         );
 
         CString::from_raw(activate_name);
