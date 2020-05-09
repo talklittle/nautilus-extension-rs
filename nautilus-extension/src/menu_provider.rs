@@ -203,7 +203,7 @@ macro_rules! menu_provider_iface {
                 menu_items: file_items,
             };
 
-            top_menu.to_g_list(Box::into_raw(Box::new(current_folder)) as *mut c_void)
+            top_menu.to_g_list(Box::into_raw(Box::new(file_info)) as *mut c_void)
         }
 
         pub fn $set_rust_provider(menu_provider: Box<dyn MenuProvider>) {
