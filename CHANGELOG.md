@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.0 (2020-05-10)
+
+* Add `get_background_items()`
+
 ## 0.5.0 (2020-04-29)
 
 * Replace deprecated `ATOMIC_USIZE_INIT`.
