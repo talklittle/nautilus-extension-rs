@@ -69,6 +69,21 @@ macro_rules! nautilus_menu_item_activate_cb {
     }
 }
 
+#[macro_export]
+macro_rules! nautilus_menu_background_activate_cb {
+    ($extern_fn:ident, $safe_fn:ident) => {
+        #[no_mangle]
+        pub unsafe extern "C" fn $extern_fn(_nautilusmenuitem: *mut GObject, user_data: gpointer) {
+            use $crate::info_provider::FileInfo;
+            use std::mem;
+
+            let file: Box<FileInfo> = Box::from_raw(mem::transmute(user_data));
+            $safe_fn(*file);
+        }
+
+    }
+}
+
 #[cfg(test)]
 mod tests {
     #[test]

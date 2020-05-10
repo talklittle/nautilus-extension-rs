@@ -3,7 +3,7 @@ use gobject_ffi::{GObject, g_signal_connect_data};
 use gtk_ffi::GtkWidget;
 use info_provider::FileInfo;
 use libc::c_void;
-use nautilus_ffi::{NautilusMenu, NautilusMenuItem, NautilusMenuProviderIface};
+use nautilus_ffi::{NautilusFileInfo, NautilusMenu, NautilusMenuItem, NautilusMenuProviderIface};
 use nautilus_ffi::{nautilus_menu_new, nautilus_menu_append_item, nautilus_menu_item_new, nautilus_menu_item_set_submenu};
 use std::borrow::Cow;
 use std::ffi::CString;
@@ -15,6 +15,7 @@ use translate::file_info_vec_from_g_list;
 
 pub trait MenuProvider : Send + Sync {
     fn get_file_items(&self, window: *mut GtkWidget, files: &Vec<FileInfo>) -> Vec<MenuItem>;
+    fn get_background_items(&self, window: *mut GtkWidget, current_folder: &FileInfo) -> Vec<MenuItem>;
 }
 
 #[derive(Clone)]
@@ -152,14 +153,13 @@ impl MenuItem {
 }
 
 macro_rules! menu_provider_iface {
-    ($iface_init_fn:ident, $get_file_items_fn:ident, $rust_provider:ident, $set_rust_provider:ident) => {
+    ($iface_init_fn:ident, $get_file_items_fn:ident, $get_background_items_fn:ident, $rust_provider:ident, $set_rust_provider:ident) => {
 
         #[no_mangle]
         pub unsafe extern "C" fn $iface_init_fn(iface: gpointer, _: gpointer) {
             let iface_struct = iface as *mut NautilusMenuProviderIface;
             (*iface_struct).get_file_items = Some($get_file_items_fn);
-
-            // TODO get_background_items
+            (*iface_struct).get_background_items = Some($get_background_items_fn);
         }
 
         #[no_mangle]
@@ -182,6 +182,28 @@ macro_rules! menu_provider_iface {
             };
 
             top_menu.to_g_list(Box::into_raw(Box::new(files_vec)) as *mut c_void)
+        }
+
+        #[no_mangle]
+        pub extern "C" fn $get_background_items_fn(_provider: *mut c_void, window: *mut GtkWidget, current_folder: *mut NautilusFileInfo) -> *mut GList {
+            if current_folder.is_null() {
+                return ptr::null_mut() as *mut GList;
+            }
+
+            let file_info = FileInfo::new(current_folder);
+
+            let file_items: Vec<MenuItem> =
+                match *$rust_provider.lock().unwrap() {
+                    Some(ref p) => p.get_background_items(window, &file_info),
+                    None => Vec::new(),
+                };
+
+            // dummy top-level Menu for easy recursion
+            let top_menu = Menu {
+                menu_items: file_items,
+            };
+
+            top_menu.to_g_list(Box::into_raw(Box::new(file_info)) as *mut c_void)
         }
 
         pub fn $set_rust_provider(menu_provider: Box<dyn MenuProvider>) {
@@ -218,16 +240,16 @@ fn connect_activate_signal(raw_menuitem: *mut NautilusMenuItem, activate_fn: uns
     }
 }
 
-menu_provider_iface!(menu_provider_iface_init_0, menu_provider_get_file_items_0, MENU_PROVIDER_0, set_menu_provider_0);
-menu_provider_iface!(menu_provider_iface_init_1, menu_provider_get_file_items_1, MENU_PROVIDER_1, set_menu_provider_1);
-menu_provider_iface!(menu_provider_iface_init_2, menu_provider_get_file_items_2, MENU_PROVIDER_2, set_menu_provider_2);
-menu_provider_iface!(menu_provider_iface_init_3, menu_provider_get_file_items_3, MENU_PROVIDER_3, set_menu_provider_3);
-menu_provider_iface!(menu_provider_iface_init_4, menu_provider_get_file_items_4, MENU_PROVIDER_4, set_menu_provider_4);
-menu_provider_iface!(menu_provider_iface_init_5, menu_provider_get_file_items_5, MENU_PROVIDER_5, set_menu_provider_5);
-menu_provider_iface!(menu_provider_iface_init_6, menu_provider_get_file_items_6, MENU_PROVIDER_6, set_menu_provider_6);
-menu_provider_iface!(menu_provider_iface_init_7, menu_provider_get_file_items_7, MENU_PROVIDER_7, set_menu_provider_7);
-menu_provider_iface!(menu_provider_iface_init_8, menu_provider_get_file_items_8, MENU_PROVIDER_8, set_menu_provider_8);
-menu_provider_iface!(menu_provider_iface_init_9, menu_provider_get_file_items_9, MENU_PROVIDER_9, set_menu_provider_9);
+menu_provider_iface!(menu_provider_iface_init_0, menu_provider_get_file_items_0, menu_provider_get_background_items_0, MENU_PROVIDER_0, set_menu_provider_0);
+menu_provider_iface!(menu_provider_iface_init_1, menu_provider_get_file_items_1, menu_provider_get_background_items_1, MENU_PROVIDER_1, set_menu_provider_1);
+menu_provider_iface!(menu_provider_iface_init_2, menu_provider_get_file_items_2, menu_provider_get_background_items_2, MENU_PROVIDER_2, set_menu_provider_2);
+menu_provider_iface!(menu_provider_iface_init_3, menu_provider_get_file_items_3, menu_provider_get_background_items_3, MENU_PROVIDER_3, set_menu_provider_3);
+menu_provider_iface!(menu_provider_iface_init_4, menu_provider_get_file_items_4, menu_provider_get_background_items_4, MENU_PROVIDER_4, set_menu_provider_4);
+menu_provider_iface!(menu_provider_iface_init_5, menu_provider_get_file_items_5, menu_provider_get_background_items_5, MENU_PROVIDER_5, set_menu_provider_5);
+menu_provider_iface!(menu_provider_iface_init_6, menu_provider_get_file_items_6, menu_provider_get_background_items_6, MENU_PROVIDER_6, set_menu_provider_6);
+menu_provider_iface!(menu_provider_iface_init_7, menu_provider_get_file_items_7, menu_provider_get_background_items_7, MENU_PROVIDER_7, set_menu_provider_7);
+menu_provider_iface!(menu_provider_iface_init_8, menu_provider_get_file_items_8, menu_provider_get_background_items_8, MENU_PROVIDER_8, set_menu_provider_8);
+menu_provider_iface!(menu_provider_iface_init_9, menu_provider_get_file_items_9, menu_provider_get_background_items_9, MENU_PROVIDER_9, set_menu_provider_9);
 
 pub fn menu_provider_iface_externs() -> Vec<unsafe extern "C" fn(gpointer, gpointer)> {
     vec![
