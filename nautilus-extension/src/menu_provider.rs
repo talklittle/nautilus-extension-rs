@@ -15,7 +15,7 @@ use translate::file_info_vec_from_g_list;
 
 pub trait MenuProvider : Send + Sync {
     fn get_file_items(&self, window: *mut GtkWidget, files: &Vec<FileInfo>) -> Vec<MenuItem>;
-    fn get_background_items(&self, window: *mut GtkWidget, file: &FileInfo) -> Vec<MenuItem>;
+    fn get_background_items(&self, window: *mut GtkWidget, current_folder: &FileInfo) -> Vec<MenuItem>;
 }
 
 #[derive(Clone)]
