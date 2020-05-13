@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.7.0 (2020-05-13)
+## 0.6.1 (2020-05-13)
 
 * Make methods in the `MenuProvider` trait optional.
 
