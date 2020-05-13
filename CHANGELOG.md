@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.0 (2020-05-13)
+
+* Make methods in the `MenuProvider` trait optional.
+
 ## 0.6.0 (2020-05-10)
 
 * Add `get_background_items()`
