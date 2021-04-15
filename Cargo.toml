@@ -1,0 +1,5 @@
+[workspace]
+members = [
+  "nautilus-extension",
+  "nautilus-extension-sys"
+]
