@@ -69,11 +69,11 @@ impl Menu {
                 }
 
                 // deallocate CStrings
-                CString::from_raw(raw_name);
-                CString::from_raw(raw_label);
-                CString::from_raw(raw_tip);
+                let _ = CString::from_raw(raw_name);
+                let _ = CString::from_raw(raw_label);
+                let _ = CString::from_raw(raw_tip);
                 if !raw_icon.is_null() {
-                    CString::from_raw(raw_icon);
+                    let _ = CString::from_raw(raw_icon);
                 }
             }
         }
@@ -112,11 +112,11 @@ impl Menu {
                 }
 
                 // deallocate CStrings
-                CString::from_raw(raw_name);
-                CString::from_raw(raw_label);
-                CString::from_raw(raw_tip);
+                let _ = CString::from_raw(raw_name);
+                let _ = CString::from_raw(raw_label);
+                let _ = CString::from_raw(raw_tip);
                 if !raw_icon.is_null() {
-                    CString::from_raw(raw_icon);
+                    let _ = CString::from_raw(raw_icon);
                 }
             }
         }
@@ -246,7 +246,8 @@ fn connect_activate_signal(raw_menuitem: *mut NautilusMenuItem, activate_fn: uns
             0
         );
 
-        CString::from_raw(activate_name);
+        // deallocate CStrings
+        let _ = CString::from_raw(activate_name);
     }
 }
 

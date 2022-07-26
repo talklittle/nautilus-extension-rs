@@ -9,8 +9,8 @@ use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 pub trait InfoProvider : Send + Sync {
-    fn should_update_file_info(&self, &FileInfo) -> bool;
-    fn update_file_info(&self, &mut FileInfo);
+    fn should_update_file_info(&self, file_info: &FileInfo) -> bool;
+    fn update_file_info(&self, file_info: &mut FileInfo);
 }
 
 #[derive(Clone)]
@@ -144,8 +144,8 @@ macro_rules! info_provider_iface {
                         nautilus_file_info_add_string_attribute(file_info.raw_file_info, attr_name_c, attr_value_c);
 
                         // deallocate CStrings
-                        CString::from_raw(attr_name_c);
-                        CString::from_raw(attr_value_c);
+                        let _ = CString::from_raw(attr_name_c);
+                        let _ = CString::from_raw(attr_value_c);
                     }
 
                     nautilus_info_provider_update_complete_invoke(update_complete, provider, handle_ref, NautilusOperationResult::NautilusOperationComplete);

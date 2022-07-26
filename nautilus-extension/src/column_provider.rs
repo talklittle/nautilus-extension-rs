@@ -61,10 +61,10 @@ macro_rules! column_provider_iface {
                     columns_g_list = g_list_append(columns_g_list, column_c as *mut c_void);
 
                     // deallocate CStrings
-                    CString::from_raw(name);
-                    CString::from_raw(attribute);
-                    CString::from_raw(label);
-                    CString::from_raw(description);
+                    let _ = CString::from_raw(name);
+                    let _ = CString::from_raw(attribute);
+                    let _ = CString::from_raw(label);
+                    let _ = CString::from_raw(description);
                 }
             }
 

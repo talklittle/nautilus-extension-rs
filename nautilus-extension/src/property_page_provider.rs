@@ -59,7 +59,7 @@ macro_rules! property_page_provider_iface {
                     pages_g_list = g_list_append(pages_g_list, page_c as *mut c_void);
 
                     // deallocate CStrings
-                    CString::from_raw(name);
+                    let _ = CString::from_raw(name);
                 }
             }
 
