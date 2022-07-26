@@ -12,8 +12,8 @@ for a usage example.
 ## Requirements
 
 * Nautilus 3
-* Gtk+ 3.18+
-* Rust 1.27+
+* Gtk+ 3.20+
+* Rust 1.57+
 
 ## Release notes
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.0 (2022-07-26)
+
+* Update gtk-rs and related dependencies to version 0.15.
+* Require GTK+ 3.20 and Rust 1.57.
+* Match -sys crate's minor version to main crate's (0.7).
+
 ## 0.6.1 (2020-05-13)
 
 * Make methods in the `MenuProvider` trait optional.
