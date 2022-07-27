@@ -50,7 +50,7 @@ impl NautilusModule {
         }
     }
 
-    pub fn add_column_provider<'a, T: ColumnProvider + 'static>(&'a mut self, column_provider: T) -> &'a mut NautilusModule {
+    pub fn add_column_provider<T: ColumnProvider + 'static>(&mut self, column_provider: T) -> &mut NautilusModule {
         let index = take_next_column_provider_iface_index();
         let iface_init_fn = column_provider_iface_externs()[index];
         let rust_provider_setter = &rust_column_provider_setters()[index];
@@ -68,7 +68,7 @@ impl NautilusModule {
         self
     }
 
-    pub fn add_info_provider<'a, T: InfoProvider + 'static>(&'a mut self, info_provider: T) -> &'a mut NautilusModule {
+    pub fn add_info_provider<T: InfoProvider + 'static>(&mut self, info_provider: T) -> &mut NautilusModule {
         let index = take_next_info_provider_iface_index();
         let iface_init_fn = info_provider_iface_externs()[index];
         let rust_provider_setter = &rust_info_provider_setters()[index];
@@ -86,7 +86,7 @@ impl NautilusModule {
         self
     }
 
-    pub fn add_menu_provider<'a, T: MenuProvider + 'static>(&'a mut self, menu_provider: T) -> &'a mut NautilusModule {
+    pub fn add_menu_provider<T: MenuProvider + 'static>(&mut self, menu_provider: T) -> &mut NautilusModule {
         let index = take_next_menu_provider_iface_index();
         let iface_init_fn = menu_provider_iface_externs()[index];
         let rust_provider_setter = &rust_menu_provider_setters()[index];
@@ -104,7 +104,7 @@ impl NautilusModule {
         self
     }
 
-    pub fn add_property_page_provider<'a, T: PropertyPageProvider + 'static>(&'a mut self, property_page_provider: T) -> &'a mut NautilusModule {
+    pub fn add_property_page_provider<T: PropertyPageProvider + 'static>(&mut self, property_page_provider: T) -> &mut NautilusModule {
         let index = take_next_property_page_provider_iface_index();
         let iface_init_fn = property_page_provider_iface_externs()[index];
         let rust_provider_setter = &rust_property_page_provider_setters()[index];
@@ -166,7 +166,7 @@ fn g_object_instance_size() -> u16 {
     let mut query: GTypeQuery = GTypeQuery {
         instance_size: 0,
         class_size: 0,
-        type_name: std::ptr::null::<c_char>(),
+        type_name: ptr::null::<c_char>(),
         type_: 0
     };
     unsafe {
