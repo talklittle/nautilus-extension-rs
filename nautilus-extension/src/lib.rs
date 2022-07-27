@@ -39,7 +39,7 @@ macro_rules! nautilus_module {
         }
 
         #[no_mangle]
-        pub extern "C" fn nautilus_module_list_types(types: *mut *const GType, num_types: *mut c_int) {
+        pub unsafe extern "C" fn nautilus_module_list_types(types: *mut *const GType, num_types: *mut c_int) {
             let list_ptr = MODULE_TYPE_LIST.lock().unwrap().as_ptr();
             let list_len = MODULE_TYPE_LIST.lock().unwrap().len() as c_int;
             unsafe {
