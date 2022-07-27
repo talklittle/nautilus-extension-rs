@@ -5,7 +5,9 @@ authors = ["Andrew Shu <talklittle@gmail.com>"]
 description = "FFI bindings to libnautilus-extension"
 repository = "https://github.com/talklittle/nautilus-extension-rs"
 keywords = ["nautilus", "bindings"]
+categories = ["external-ffi-bindings"]
 license = "GPL-3.0"
+readme = "README.md"
 
 [lib]
 name = "nautilus_extension_sys"

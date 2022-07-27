@@ -5,6 +5,7 @@ authors = ["Andrew Shu <talklittle@gmail.com>"]
 description = "Safe Rust wrapper for libnautilus-extension, to extend GNOME Nautilus file browser (aka Files in Ubuntu)"
 repository = "https://github.com/talklittle/nautilus-extension-rs"
 keywords = ["nautilus", "bindings", "gnome", "ubuntu"]
+categories = ["api-bindings"]
 license = "GPL-3.0"
 readme = "../README.md"
 
