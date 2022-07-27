@@ -17,8 +17,8 @@ for a usage example.
 
 ## Release notes
 
-See the [changelog](CHANGELOG.md) for changes between versions.
+See the [changelog](https://github.com/talklittle/nautilus-extension-rs/blob/master/CHANGELOG.md) for changes between versions.
 
 ## License
 
-[GNU General Public License version 3](COPYING.txt)
+[GNU General Public License version 3](https://github.com/talklittle/nautilus-extension-rs/blob/master/COPYING.txt)

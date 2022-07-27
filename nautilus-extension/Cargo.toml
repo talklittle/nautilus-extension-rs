@@ -6,6 +6,7 @@ description = "Safe Rust wrapper for libnautilus-extension, to extend GNOME Naut
 repository = "https://github.com/talklittle/nautilus-extension-rs"
 keywords = ["nautilus", "bindings", "gnome", "ubuntu"]
 license = "GPL-3.0"
+readme = "../README.md"
 
 [lib]
 name = "nautilus_extension"
