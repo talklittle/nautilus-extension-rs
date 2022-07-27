@@ -41,7 +41,7 @@ pub struct NautilusModule {
 impl NautilusModule {
     pub fn new<S: Into<Cow<'static, str>>>(module: *mut GTypeModule, name: S) -> NautilusModule {
         NautilusModule {
-            module: module,
+            module,
             name: name.into(),
             column_provider_iface_infos: Vec::new(),
             info_provider_iface_infos: Vec::new(),
@@ -166,11 +166,11 @@ fn g_object_instance_size() -> u16 {
     let mut query: GTypeQuery = GTypeQuery {
         instance_size: 0,
         class_size: 0,
-        type_name: 0 as *const c_char,
+        type_name: std::ptr::null::<c_char>(),
         type_: 0
     };
     unsafe {
         g_type_query(G_TYPE_OBJECT, &mut query);
     }
-    return query.instance_size as u16;
+    query.instance_size as u16
 }

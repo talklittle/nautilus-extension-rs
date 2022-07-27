@@ -20,8 +20,8 @@ impl PropertyPage {
     pub fn new<S: Into<Cow<'static, str>>>(name: S, raw_label: *mut GtkWidget, raw_page: *mut GtkWidget) -> PropertyPage {
         PropertyPage {
             name: name.into(),
-            raw_label: raw_label,
-            raw_page: raw_page,
+            raw_label,
+            raw_page,
         }
     }
 }

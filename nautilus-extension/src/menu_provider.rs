@@ -59,7 +59,7 @@ impl Menu {
 
                 let submenu = &menu_item.submenu;
                 match *submenu {
-                    Some(ref submenu) => process_submenu(raw_menuitem, &submenu, files_user_data),
+                    Some(ref submenu) => process_submenu(raw_menuitem, submenu, files_user_data),
                     None => (),
                 }
 
@@ -102,7 +102,7 @@ impl Menu {
 
                 let submenu = &menu_item.submenu;
                 match *submenu {
-                    Some(ref submenu) => process_submenu(raw_menuitem, &submenu, files_user_data),
+                    Some(ref submenu) => process_submenu(raw_menuitem, submenu, files_user_data),
                     None => (),
                 }
 
@@ -137,15 +137,12 @@ pub struct MenuItem {
 
 impl MenuItem {
     pub fn new<S: Into<Cow<'static, str>>>(name: S, label: S, tip: S, icon: Option<S>) -> MenuItem {
-        let icon = match icon {
-            Some(s) => Some(s.into()),
-            None => None,
-        };
+        let icon = icon.map(|s| s.into());
         MenuItem {
             name: name.into(),
             label: label.into(),
             tip: tip.into(),
-            icon: icon,
+            icon,
             submenu: None,
             activate_fn: None,
         }

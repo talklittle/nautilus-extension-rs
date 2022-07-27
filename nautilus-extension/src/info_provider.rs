@@ -24,7 +24,7 @@ unsafe impl Send for FileInfo {}
 impl FileInfo {
     pub fn new(raw_file_info: *mut NautilusFileInfo) -> FileInfo {
         FileInfo {
-            raw_file_info: raw_file_info,
+            raw_file_info,
             attributes: HashMap::new(),
         }
     }
