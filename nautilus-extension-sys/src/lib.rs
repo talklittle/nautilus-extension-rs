@@ -45,8 +45,8 @@ pub struct NautilusColumnProviderIface {
 #[repr(C)]
 pub struct NautilusInfoProviderIface {
     g_iface: GTypeInterface,
-    pub update_file_info: Option<extern fn(*mut NautilusInfoProvider, *mut NautilusFileInfo, *mut GClosure, *mut *mut NautilusOperationHandle) -> NautilusOperationResult>,
-    pub cancel_update: Option<extern fn(*mut NautilusInfoProvider, *mut NautilusOperationHandle)>
+    pub update_file_info: Option<unsafe extern fn(*mut NautilusInfoProvider, *mut NautilusFileInfo, *mut GClosure, *mut *mut NautilusOperationHandle) -> NautilusOperationResult>,
+    pub cancel_update: Option<unsafe extern fn(*mut NautilusInfoProvider, *mut NautilusOperationHandle)>
 }
 
 #[repr(C)]

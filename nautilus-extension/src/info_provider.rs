@@ -71,10 +71,10 @@ macro_rules! info_provider_iface {
         }
 
         #[no_mangle]
-        pub extern "C" fn $update_file_info_fn(provider: *mut NautilusInfoProvider,
-                                               file: *mut NautilusFileInfo,
-                                               update_complete: *mut GClosure,
-                                               handle: *mut *mut NautilusOperationHandle) -> NautilusOperationResult {
+        pub unsafe extern "C" fn $update_file_info_fn(provider: *mut NautilusInfoProvider,
+                                                      file: *mut NautilusFileInfo,
+                                                      update_complete: *mut GClosure,
+                                                      handle: *mut *mut NautilusOperationHandle) -> NautilusOperationResult {
             use std::mem;
             use std::sync::{Arc, Mutex};
             use std::sync::mpsc::channel;
@@ -97,28 +97,26 @@ macro_rules! info_provider_iface {
 
             let (tx, rx) = channel();
             thread::spawn(move || {
+                // background thread receives arguments from channel
                 let (file_info, provider, update_complete, handle_ref) = rx.recv().unwrap();
                 $update_file_info_bg_fn(file_info, provider, update_complete, my_handle_thread, handle_ref);
             });
 
-            unsafe {
-                let closure_copy = g_closure_ref(update_complete);
-                *handle = mem::transmute(Box::into_raw(Box::new(my_handle_local)));
-                tx.send((Box::new(file_info), &mut *provider, &mut *closure_copy, &mut **handle)).unwrap();
-            }
+            // send arguments to background thread via channel
+            let closure_copy = g_closure_ref(update_complete);
+            *handle = mem::transmute(Box::into_raw(Box::new(my_handle_local)));
+            tx.send((Box::new(file_info), &mut *provider, &mut *closure_copy, &mut **handle)).unwrap();
 
             return NautilusOperationResult::NautilusOperationInProgress;
         }
 
         #[no_mangle]
-        pub extern "C" fn $cancel_update_fn(_provider: *mut NautilusInfoProvider, handle: *mut NautilusOperationHandle) {
+        pub unsafe extern "C" fn $cancel_update_fn(_provider: *mut NautilusInfoProvider, handle: *mut NautilusOperationHandle) {
             use std::sync::{Arc, Mutex};
 
-            unsafe {
-                let handle = handle as *mut Arc<Mutex<UpdateFileInfoOperationHandle>>;
-                let mut my_handle = (*handle).lock().unwrap();
-                my_handle.skip_response = true;
-            }
+            let handle = handle as *mut Arc<Mutex<UpdateFileInfoOperationHandle>>;
+            let mut my_handle = (*handle).lock().unwrap();
+            my_handle.skip_response = true;
         }
 
         fn $update_file_info_bg_fn(mut file_info: Box<FileInfo>,
