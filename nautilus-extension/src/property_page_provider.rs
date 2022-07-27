@@ -27,11 +27,15 @@ impl PropertyPage {
 }
 
 pub trait PropertyPageProvider : Send {
-    fn get_pages(&self, files: &Vec<FileInfo>) -> Vec<PropertyPage>;
+    fn get_pages(&self, files: &[FileInfo]) -> Vec<PropertyPage>;
 }
 
 macro_rules! property_page_provider_iface {
     ($iface_init_fn:ident, $get_pages_fn:ident, $rust_provider:ident, $set_rust_provider:ident) => {
+        /// # Safety
+        ///
+        /// This generated function is used as a Nautilus callback. Do not call directly.
+        /// Use `NautilusModule.add_property_page_provider()` instead.
         #[no_mangle]
         pub unsafe extern "C" fn $iface_init_fn(iface: gpointer, _: gpointer) {
             use nautilus_ffi::NautilusPropertyPageProviderIface;

@@ -16,7 +16,7 @@ use translate::file_info_vec_from_g_list;
 pub trait MenuProvider : Send + Sync {
 
     #[allow(unused_variables)]
-    fn get_file_items(&self, window: *mut GtkWidget, files: &Vec<FileInfo>) -> Vec<MenuItem> {
+    fn get_file_items(&self, window: *mut GtkWidget, files: &[FileInfo]) -> Vec<MenuItem> {
         Vec::new()
     }
 
@@ -34,9 +34,9 @@ pub struct Menu {
 }
 
 impl Menu {
-    pub fn new(menu_items: &Vec<MenuItem>) -> Menu {
+    pub fn new(menu_items: &[MenuItem]) -> Menu {
         Menu {
-            menu_items: menu_items.clone(),
+            menu_items: menu_items.to_owned(),
         }
     }
 
@@ -162,6 +162,10 @@ impl MenuItem {
 macro_rules! menu_provider_iface {
     ($iface_init_fn:ident, $get_file_items_fn:ident, $get_background_items_fn:ident, $rust_provider:ident, $set_rust_provider:ident) => {
 
+        /// # Safety
+        ///
+        /// This generated function is used as a Nautilus callback. Do not call directly.
+        /// Use `NautilusModule.add_menu_provider()` instead.
         #[no_mangle]
         pub unsafe extern "C" fn $iface_init_fn(iface: gpointer, _: gpointer) {
             let iface_struct = iface as *mut NautilusMenuProviderIface;

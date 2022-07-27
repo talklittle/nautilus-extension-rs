@@ -61,6 +61,10 @@ pub struct UpdateFileInfoOperationHandle {
 
 macro_rules! info_provider_iface {
     ($iface_init_fn:ident, $update_file_info_fn:ident, $update_file_info_bg_fn:ident, $cancel_update_fn:ident, $rust_provider:ident, $set_rust_provider:ident) => {
+        /// # Safety
+        ///
+        /// This generated function is used as a Nautilus callback. Do not call directly.
+        /// Use `NautilusModule.add_info_provider()` instead.
         #[no_mangle]
         pub unsafe extern "C" fn $iface_init_fn(iface: gpointer, _: gpointer) {
             use nautilus_ffi::NautilusInfoProviderIface;
@@ -70,6 +74,9 @@ macro_rules! info_provider_iface {
             (*iface_struct).cancel_update = Some($cancel_update_fn);
         }
 
+        /// # Safety
+        ///
+        /// This generated function is used as a Nautilus callback. Do not call directly.
         #[no_mangle]
         pub unsafe extern "C" fn $update_file_info_fn(provider: *mut NautilusInfoProvider,
                                                       file: *mut NautilusFileInfo,
@@ -80,10 +87,10 @@ macro_rules! info_provider_iface {
             use std::sync::mpsc::channel;
             use std::thread;
 
-            let mut file_info = FileInfo::new(file);
+            let file_info = FileInfo::new(file);
 
             let should_update_file_info = match *$rust_provider.lock().unwrap() {
-                Some(ref p) => p.should_update_file_info(&mut file_info),
+                Some(ref p) => p.should_update_file_info(&file_info),
                 None => false,
             };
 
@@ -110,6 +117,9 @@ macro_rules! info_provider_iface {
             return NautilusOperationResult::NautilusOperationInProgress;
         }
 
+        /// # Safety
+        ///
+        /// This generated function is used as a Nautilus callback. Do not call directly.
         #[no_mangle]
         pub unsafe extern "C" fn $cancel_update_fn(_provider: *mut NautilusInfoProvider, handle: *mut NautilusOperationHandle) {
             use std::sync::{Arc, Mutex};

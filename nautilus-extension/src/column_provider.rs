@@ -27,6 +27,10 @@ pub trait ColumnProvider : Send + Sync {
 
 macro_rules! column_provider_iface {
     ($iface_init_fn:ident, $get_columns_fn:ident, $rust_provider:ident, $set_rust_provider:ident) => {
+        /// # Safety
+        ///
+        /// This generated function is used as a Nautilus callback. Do not call directly.
+        /// Use `NautilusModule.add_column_provider()` instead.
         #[no_mangle]
         pub unsafe extern "C" fn $iface_init_fn(iface: gpointer, _: gpointer) {
             use nautilus_ffi::NautilusColumnProviderIface;
