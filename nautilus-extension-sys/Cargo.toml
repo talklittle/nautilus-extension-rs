@@ -1,6 +1,6 @@
 [package]
 name = "nautilus-extension-sys"
-version = "0.7.0"
+version = "0.8.0"
 authors = ["Andrew Shu <talklittle@gmail.com>"]
 description = "FFI bindings to libnautilus-extension"
 repository = "https://github.com/talklittle/nautilus-extension-rs"

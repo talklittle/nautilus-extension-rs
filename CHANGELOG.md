@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.0 (2022-07-27)
+
+* Fixed Clippy lint errors and warnings.
+* Bumped version due to trait function signature changes.
+
 ## 0.7.0 (2022-07-26)
 
 * Update gtk-rs and related dependencies to version 0.15.
