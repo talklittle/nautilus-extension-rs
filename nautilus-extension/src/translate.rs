@@ -1,6 +1,6 @@
-use glib_ffi::{GList, g_list_length, g_list_nth_data};
-use info_provider::FileInfo;
-use nautilus_ffi::NautilusFileInfo;
+use crate::glib_ffi::{GList, g_list_length, g_list_nth_data};
+use crate::info_provider::FileInfo;
+use crate::nautilus_ffi::NautilusFileInfo;
 
 pub fn file_info_vec_from_g_list(list: *mut GList) -> Vec<FileInfo> {
     let mut vec = Vec::new();

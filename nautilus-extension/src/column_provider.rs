@@ -1,4 +1,4 @@
-use glib_ffi::{GList, gpointer};
+use crate::glib_ffi::{GList, gpointer};
 use std::borrow::Cow;
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -33,7 +33,7 @@ macro_rules! column_provider_iface {
         /// Use `NautilusModule.add_column_provider()` instead.
         #[no_mangle]
         pub unsafe extern "C" fn $iface_init_fn(iface: gpointer, _: gpointer) {
-            use nautilus_ffi::NautilusColumnProviderIface;
+            use crate::nautilus_ffi::NautilusColumnProviderIface;
 
             let iface_struct = iface as *mut NautilusColumnProviderIface;
             (*iface_struct).get_columns = Some($get_columns_fn);
@@ -41,9 +41,9 @@ macro_rules! column_provider_iface {
 
         #[no_mangle]
         pub extern "C" fn $get_columns_fn(_provider: gpointer) -> *mut GList {
-            use glib_ffi::g_list_append;
+            use crate::glib_ffi::g_list_append;
             use libc::c_void;
-            use nautilus_ffi::nautilus_column_new;
+            use crate::nautilus_ffi::nautilus_column_new;
             use std::ffi::CString;
             use std::ptr;
 

@@ -1,14 +1,14 @@
-use glib_ffi::{GList, g_list_append, gpointer};
-use gtk_ffi::GtkWidget;
-use info_provider::FileInfo;
+use crate::glib_ffi::{GList, g_list_append, gpointer};
+use crate::gtk_ffi::GtkWidget;
+use crate::info_provider::FileInfo;
 use libc::c_void;
-use nautilus_ffi::{NautilusPropertyPageProvider, nautilus_property_page_new};
+use crate::nautilus_ffi::{NautilusPropertyPageProvider, nautilus_property_page_new};
 use std::borrow::Cow;
 use std::ffi::CString;
 use std::ptr;
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicUsize, Ordering};
-use translate::file_info_vec_from_g_list;
+use crate::translate::file_info_vec_from_g_list;
 
 pub struct PropertyPage {
     pub name: Cow<'static, str>,
@@ -38,7 +38,7 @@ macro_rules! property_page_provider_iface {
         /// Use `NautilusModule.add_property_page_provider()` instead.
         #[no_mangle]
         pub unsafe extern "C" fn $iface_init_fn(iface: gpointer, _: gpointer) {
-            use nautilus_ffi::NautilusPropertyPageProviderIface;
+            use crate::nautilus_ffi::NautilusPropertyPageProviderIface;
 
             let iface_struct = iface as *mut NautilusPropertyPageProviderIface;
             (*iface_struct).get_pages = Some($get_pages_fn);

@@ -6,10 +6,10 @@ extern crate gobject_sys as gobject_ffi;
 extern crate gtk_sys as gtk_ffi;
 extern crate libc;
 
-use gio_ffi::{GFile, GFileType, GMount};
-use glib_ffi::{GList, GType, gboolean, gpointer};
-use gobject_ffi::{GClosure, GTypeInterface};
-use gtk_ffi::GtkWidget;
+use crate::gio_ffi::{GFile, GFileType, GMount};
+use crate::glib_ffi::{GList, GType, gboolean, gpointer};
+use crate::gobject_ffi::{GClosure, GTypeInterface};
+use crate::gtk_ffi::GtkWidget;
 use libc::c_char;
 
 #[repr(C)]

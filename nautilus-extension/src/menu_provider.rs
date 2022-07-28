@@ -1,17 +1,17 @@
-use glib_ffi::{GList, g_list_append, gpointer};
-use gobject_ffi::{GObject, g_signal_connect_data};
-use gtk_ffi::GtkWidget;
-use info_provider::FileInfo;
+use crate::glib_ffi::{GList, g_list_append, gpointer};
+use crate::gobject_ffi::{GObject, g_signal_connect_data};
+use crate::gtk_ffi::GtkWidget;
+use crate::info_provider::FileInfo;
 use libc::c_void;
-use nautilus_ffi::{NautilusFileInfo, NautilusMenu, NautilusMenuItem, NautilusMenuProviderIface};
-use nautilus_ffi::{nautilus_menu_new, nautilus_menu_append_item, nautilus_menu_item_new, nautilus_menu_item_set_submenu};
+use crate::nautilus_ffi::{NautilusFileInfo, NautilusMenu, NautilusMenuItem, NautilusMenuProviderIface};
+use crate::nautilus_ffi::{nautilus_menu_new, nautilus_menu_append_item, nautilus_menu_item_new, nautilus_menu_item_set_submenu};
 use std::borrow::Cow;
 use std::ffi::CString;
 use std::mem;
 use std::ptr;
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicUsize, Ordering};
-use translate::file_info_vec_from_g_list;
+use crate::translate::file_info_vec_from_g_list;
 
 pub trait MenuProvider : Send + Sync {
 

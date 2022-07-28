@@ -9,12 +9,12 @@ extern crate lazy_static;
 extern crate libc;
 extern crate nautilus_extension_sys as nautilus_ffi;
 
-pub use column_provider::{Column, ColumnProvider};
-pub use info_provider::{FileInfo, InfoProvider};
+pub use crate::column_provider::{Column, ColumnProvider};
+pub use crate::info_provider::{FileInfo, InfoProvider};
 pub use lazy_static::lazy_static;
-pub use menu_provider::{Menu, MenuItem, MenuProvider};
-pub use nautilus_module::NautilusModule;
-pub use property_page_provider::{PropertyPage, PropertyPageProvider};
+pub use crate::menu_provider::{Menu, MenuItem, MenuProvider};
+pub use crate::nautilus_module::NautilusModule;
+pub use crate::property_page_provider::{PropertyPage, PropertyPageProvider};
 
 pub mod column_provider;
 pub mod info_provider;

@@ -1,8 +1,8 @@
-use glib_ffi::gpointer;
-use gobject_ffi::{GClosure, g_closure_ref};
-use nautilus_ffi::{NautilusFileInfo, NautilusInfoProvider, NautilusOperationHandle, NautilusOperationResult};
-use nautilus_ffi::{nautilus_file_info_add_string_attribute, nautilus_file_info_get_uri, nautilus_file_info_get_uri_scheme};
-use nautilus_ffi::nautilus_file_info_invalidate_extension_info;
+use crate::glib_ffi::gpointer;
+use crate::gobject_ffi::{GClosure, g_closure_ref};
+use crate::nautilus_ffi::{NautilusFileInfo, NautilusInfoProvider, NautilusOperationHandle, NautilusOperationResult};
+use crate::nautilus_ffi::{nautilus_file_info_add_string_attribute, nautilus_file_info_get_uri, nautilus_file_info_get_uri_scheme};
+use crate::nautilus_ffi::nautilus_file_info_invalidate_extension_info;
 use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::sync::{Arc, Mutex};
@@ -67,7 +67,7 @@ macro_rules! info_provider_iface {
         /// Use `NautilusModule.add_info_provider()` instead.
         #[no_mangle]
         pub unsafe extern "C" fn $iface_init_fn(iface: gpointer, _: gpointer) {
-            use nautilus_ffi::NautilusInfoProviderIface;
+            use crate::nautilus_ffi::NautilusInfoProviderIface;
 
             let iface_struct = iface as *mut NautilusInfoProviderIface;
             (*iface_struct).update_file_info = Some($update_file_info_fn);
@@ -134,7 +134,7 @@ macro_rules! info_provider_iface {
                             update_complete: &mut GClosure,
                             my_handle: Arc<Mutex<UpdateFileInfoOperationHandle>>,
                             handle_ref: &mut NautilusOperationHandle) {
-            use nautilus_ffi::nautilus_info_provider_update_complete_invoke;
+            use crate::nautilus_ffi::nautilus_info_provider_update_complete_invoke;
 
             match *$rust_provider.lock().unwrap() {
                 Some(ref p) => p.update_file_info(file_info.as_mut()),
