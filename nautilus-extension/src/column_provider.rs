@@ -1,7 +1,7 @@
-use crate::glib_ffi::{GList, gpointer};
+use crate::glib_ffi::{gpointer, GList};
 use std::borrow::Cow;
-use std::sync::Mutex;
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::Mutex;
 
 pub struct Column {
     pub name: Cow<'static, str>,
@@ -11,7 +11,12 @@ pub struct Column {
 }
 
 impl Column {
-    pub fn new<S: Into<Cow<'static, str>>>(name: S, attribute: S, label: S, description: S) -> Column {
+    pub fn new<S: Into<Cow<'static, str>>>(
+        name: S,
+        attribute: S,
+        label: S,
+        description: S,
+    ) -> Column {
         Column {
             name: name.into(),
             attribute: attribute.into(),
@@ -21,7 +26,7 @@ impl Column {
     }
 }
 
-pub trait ColumnProvider : Send + Sync {
+pub trait ColumnProvider: Send + Sync {
     fn get_columns(&self) -> Vec<Column>;
 }
 
@@ -42,8 +47,8 @@ macro_rules! column_provider_iface {
         #[no_mangle]
         pub extern "C" fn $get_columns_fn(_provider: gpointer) -> *mut GList {
             use crate::glib_ffi::g_list_append;
-            use libc::c_void;
             use crate::nautilus_ffi::nautilus_column_new;
+            use libc::c_void;
             use std::ffi::CString;
             use std::ptr;
 
@@ -58,7 +63,9 @@ macro_rules! column_provider_iface {
                 let name = CString::new(&column.name as &str).unwrap().into_raw();
                 let attribute = CString::new(&column.attribute as &str).unwrap().into_raw();
                 let label = CString::new(&column.label as &str).unwrap().into_raw();
-                let description = CString::new(&column.description as &str).unwrap().into_raw();
+                let description = CString::new(&column.description as &str)
+                    .unwrap()
+                    .into_raw();
 
                 unsafe {
                     let column_c = nautilus_column_new(name, attribute, label, description);
@@ -82,20 +89,20 @@ macro_rules! column_provider_iface {
         lazy_static! {
             static ref $rust_provider: Mutex<Option<Box<dyn ColumnProvider>>> = Mutex::new(None);
         }
-    }
+    };
 }
 
 // Let library consumer add up to 10 ColumnProviders, should be more than enough. Each has its own Vec of columns.
-column_provider_iface!(column_provider_iface_init_0, column_provider_get_columns_0, COLUMN_PROVIDER_0, set_column_provider_0);
-column_provider_iface!(column_provider_iface_init_1, column_provider_get_columns_1, COLUMN_PROVIDER_1, set_column_provider_1);
-column_provider_iface!(column_provider_iface_init_2, column_provider_get_columns_2, COLUMN_PROVIDER_2, set_column_provider_2);
-column_provider_iface!(column_provider_iface_init_3, column_provider_get_columns_3, COLUMN_PROVIDER_3, set_column_provider_3);
-column_provider_iface!(column_provider_iface_init_4, column_provider_get_columns_4, COLUMN_PROVIDER_4, set_column_provider_4);
-column_provider_iface!(column_provider_iface_init_5, column_provider_get_columns_5, COLUMN_PROVIDER_5, set_column_provider_5);
-column_provider_iface!(column_provider_iface_init_6, column_provider_get_columns_6, COLUMN_PROVIDER_6, set_column_provider_6);
-column_provider_iface!(column_provider_iface_init_7, column_provider_get_columns_7, COLUMN_PROVIDER_7, set_column_provider_7);
-column_provider_iface!(column_provider_iface_init_8, column_provider_get_columns_8, COLUMN_PROVIDER_8, set_column_provider_8);
-column_provider_iface!(column_provider_iface_init_9, column_provider_get_columns_9, COLUMN_PROVIDER_9, set_column_provider_9);
+#[rustfmt::skip] column_provider_iface!(column_provider_iface_init_0, column_provider_get_columns_0, COLUMN_PROVIDER_0, set_column_provider_0);
+#[rustfmt::skip] column_provider_iface!(column_provider_iface_init_1, column_provider_get_columns_1, COLUMN_PROVIDER_1, set_column_provider_1);
+#[rustfmt::skip] column_provider_iface!(column_provider_iface_init_2, column_provider_get_columns_2, COLUMN_PROVIDER_2, set_column_provider_2);
+#[rustfmt::skip] column_provider_iface!(column_provider_iface_init_3, column_provider_get_columns_3, COLUMN_PROVIDER_3, set_column_provider_3);
+#[rustfmt::skip] column_provider_iface!(column_provider_iface_init_4, column_provider_get_columns_4, COLUMN_PROVIDER_4, set_column_provider_4);
+#[rustfmt::skip] column_provider_iface!(column_provider_iface_init_5, column_provider_get_columns_5, COLUMN_PROVIDER_5, set_column_provider_5);
+#[rustfmt::skip] column_provider_iface!(column_provider_iface_init_6, column_provider_get_columns_6, COLUMN_PROVIDER_6, set_column_provider_6);
+#[rustfmt::skip] column_provider_iface!(column_provider_iface_init_7, column_provider_get_columns_7, COLUMN_PROVIDER_7, set_column_provider_7);
+#[rustfmt::skip] column_provider_iface!(column_provider_iface_init_8, column_provider_get_columns_8, COLUMN_PROVIDER_8, set_column_provider_8);
+#[rustfmt::skip] column_provider_iface!(column_provider_iface_init_9, column_provider_get_columns_9, COLUMN_PROVIDER_9, set_column_provider_9);
 
 pub fn column_provider_iface_externs() -> Vec<unsafe extern "C" fn(gpointer, gpointer)> {
     vec![

@@ -1,14 +1,19 @@
 use crate::glib_ffi::gpointer;
-use crate::gobject_ffi::{GClosure, g_closure_ref};
-use crate::nautilus_ffi::{NautilusFileInfo, NautilusInfoProvider, NautilusOperationHandle, NautilusOperationResult};
-use crate::nautilus_ffi::{nautilus_file_info_add_string_attribute, nautilus_file_info_get_uri, nautilus_file_info_get_uri_scheme};
+use crate::gobject_ffi::{g_closure_ref, GClosure};
 use crate::nautilus_ffi::nautilus_file_info_invalidate_extension_info;
+use crate::nautilus_ffi::{
+    nautilus_file_info_add_string_attribute, nautilus_file_info_get_uri,
+    nautilus_file_info_get_uri_scheme,
+};
+use crate::nautilus_ffi::{
+    NautilusFileInfo, NautilusInfoProvider, NautilusOperationHandle, NautilusOperationResult,
+};
 use std::collections::HashMap;
 use std::ffi::{CStr, CString};
-use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::{Arc, Mutex};
 
-pub trait InfoProvider : Send + Sync {
+pub trait InfoProvider: Send + Sync {
     fn should_update_file_info(&self, file_info: &FileInfo) -> bool;
     fn update_file_info(&self, file_info: &mut FileInfo);
 }
@@ -32,14 +37,18 @@ impl FileInfo {
     pub fn get_uri(&self) -> String {
         let raw_file_info = &self.raw_file_info;
         unsafe {
-            CStr::from_ptr(nautilus_file_info_get_uri(*raw_file_info)).to_string_lossy().into_owned()
+            CStr::from_ptr(nautilus_file_info_get_uri(*raw_file_info))
+                .to_string_lossy()
+                .into_owned()
         }
     }
 
     pub fn get_uri_scheme(&self) -> String {
         let raw_file_info = &self.raw_file_info;
         unsafe {
-            CStr::from_ptr(nautilus_file_info_get_uri_scheme(*raw_file_info)).to_string_lossy().into_owned()
+            CStr::from_ptr(nautilus_file_info_get_uri_scheme(*raw_file_info))
+                .to_string_lossy()
+                .into_owned()
         }
     }
 
@@ -56,7 +65,7 @@ impl FileInfo {
 }
 
 pub struct UpdateFileInfoOperationHandle {
-    pub skip_response: bool
+    pub skip_response: bool,
 }
 
 macro_rules! info_provider_iface {
@@ -78,13 +87,15 @@ macro_rules! info_provider_iface {
         ///
         /// This generated function is used as a Nautilus callback. Do not call directly.
         #[no_mangle]
-        pub unsafe extern "C" fn $update_file_info_fn(provider: *mut NautilusInfoProvider,
-                                                      file: *mut NautilusFileInfo,
-                                                      update_complete: *mut GClosure,
-                                                      handle: *mut *mut NautilusOperationHandle) -> NautilusOperationResult {
+        pub unsafe extern "C" fn $update_file_info_fn(
+            provider: *mut NautilusInfoProvider,
+            file: *mut NautilusFileInfo,
+            update_complete: *mut GClosure,
+            handle: *mut *mut NautilusOperationHandle,
+        ) -> NautilusOperationResult {
             use std::mem;
-            use std::sync::{Arc, Mutex};
             use std::sync::mpsc::channel;
+            use std::sync::{Arc, Mutex};
             use std::thread;
 
             let file_info = FileInfo::new(file);
@@ -98,7 +109,9 @@ macro_rules! info_provider_iface {
                 return NautilusOperationResult::NautilusOperationComplete;
             }
 
-            let my_handle = Arc::new(Mutex::new(UpdateFileInfoOperationHandle { skip_response: false }));
+            let my_handle = Arc::new(Mutex::new(UpdateFileInfoOperationHandle {
+                skip_response: false,
+            }));
             let my_handle_local = my_handle.clone();
             let my_handle_thread = my_handle.clone();
 
@@ -106,13 +119,25 @@ macro_rules! info_provider_iface {
             thread::spawn(move || {
                 // background thread receives arguments from channel
                 let (file_info, provider, update_complete, handle_ref) = rx.recv().unwrap();
-                $update_file_info_bg_fn(file_info, provider, update_complete, my_handle_thread, handle_ref);
+                $update_file_info_bg_fn(
+                    file_info,
+                    provider,
+                    update_complete,
+                    my_handle_thread,
+                    handle_ref,
+                );
             });
 
             // send arguments to background thread via channel
             let closure_copy = g_closure_ref(update_complete);
             *handle = mem::transmute(Box::into_raw(Box::new(my_handle_local)));
-            tx.send((Box::new(file_info), &mut *provider, &mut *closure_copy, &mut **handle)).unwrap();
+            tx.send((
+                Box::new(file_info),
+                &mut *provider,
+                &mut *closure_copy,
+                &mut **handle,
+            ))
+            .unwrap();
 
             return NautilusOperationResult::NautilusOperationInProgress;
         }
@@ -121,7 +146,10 @@ macro_rules! info_provider_iface {
         ///
         /// This generated function is used as a Nautilus callback. Do not call directly.
         #[no_mangle]
-        pub unsafe extern "C" fn $cancel_update_fn(_provider: *mut NautilusInfoProvider, handle: *mut NautilusOperationHandle) {
+        pub unsafe extern "C" fn $cancel_update_fn(
+            _provider: *mut NautilusInfoProvider,
+            handle: *mut NautilusOperationHandle,
+        ) {
             use std::sync::{Arc, Mutex};
 
             let handle = handle as *mut Arc<Mutex<UpdateFileInfoOperationHandle>>;
@@ -129,11 +157,13 @@ macro_rules! info_provider_iface {
             my_handle.skip_response = true;
         }
 
-        fn $update_file_info_bg_fn(mut file_info: Box<FileInfo>,
-                            provider: &mut NautilusInfoProvider,
-                            update_complete: &mut GClosure,
-                            my_handle: Arc<Mutex<UpdateFileInfoOperationHandle>>,
-                            handle_ref: &mut NautilusOperationHandle) {
+        fn $update_file_info_bg_fn(
+            mut file_info: Box<FileInfo>,
+            provider: &mut NautilusInfoProvider,
+            update_complete: &mut GClosure,
+            my_handle: Arc<Mutex<UpdateFileInfoOperationHandle>>,
+            handle_ref: &mut NautilusOperationHandle,
+        ) {
             use crate::nautilus_ffi::nautilus_info_provider_update_complete_invoke;
 
             match *$rust_provider.lock().unwrap() {
@@ -149,14 +179,23 @@ macro_rules! info_provider_iface {
                         let attr_name_c = CString::new(attr_name.as_str()).unwrap().into_raw();
                         let attr_value_c = CString::new(attr_value.as_str()).unwrap().into_raw();
 
-                        nautilus_file_info_add_string_attribute(file_info.raw_file_info, attr_name_c, attr_value_c);
+                        nautilus_file_info_add_string_attribute(
+                            file_info.raw_file_info,
+                            attr_name_c,
+                            attr_value_c,
+                        );
 
                         // deallocate CStrings
                         let _ = CString::from_raw(attr_name_c);
                         let _ = CString::from_raw(attr_value_c);
                     }
 
-                    nautilus_info_provider_update_complete_invoke(update_complete, provider, handle_ref, NautilusOperationResult::NautilusOperationComplete);
+                    nautilus_info_provider_update_complete_invoke(
+                        update_complete,
+                        provider,
+                        handle_ref,
+                        NautilusOperationResult::NautilusOperationComplete,
+                    );
                 }
             }
         }
@@ -168,19 +207,19 @@ macro_rules! info_provider_iface {
         lazy_static! {
             static ref $rust_provider: Mutex<Option<Box<dyn InfoProvider>>> = Mutex::new(None);
         }
-    }
+    };
 }
 
-info_provider_iface!(info_provider_iface_init_0, info_provider_update_file_info_0, info_provider_update_file_info_bg_0, info_provider_cancel_update_0, INFO_PROVIDER_0, set_info_provider_0);
-info_provider_iface!(info_provider_iface_init_1, info_provider_update_file_info_1, info_provider_update_file_info_bg_1, info_provider_cancel_update_1, INFO_PROVIDER_1, set_info_provider_1);
-info_provider_iface!(info_provider_iface_init_2, info_provider_update_file_info_2, info_provider_update_file_info_bg_2, info_provider_cancel_update_2, INFO_PROVIDER_2, set_info_provider_2);
-info_provider_iface!(info_provider_iface_init_3, info_provider_update_file_info_3, info_provider_update_file_info_bg_3, info_provider_cancel_update_3, INFO_PROVIDER_3, set_info_provider_3);
-info_provider_iface!(info_provider_iface_init_4, info_provider_update_file_info_4, info_provider_update_file_info_bg_4, info_provider_cancel_update_4, INFO_PROVIDER_4, set_info_provider_4);
-info_provider_iface!(info_provider_iface_init_5, info_provider_update_file_info_5, info_provider_update_file_info_bg_5, info_provider_cancel_update_5, INFO_PROVIDER_5, set_info_provider_5);
-info_provider_iface!(info_provider_iface_init_6, info_provider_update_file_info_6, info_provider_update_file_info_bg_6, info_provider_cancel_update_6, INFO_PROVIDER_6, set_info_provider_6);
-info_provider_iface!(info_provider_iface_init_7, info_provider_update_file_info_7, info_provider_update_file_info_bg_7, info_provider_cancel_update_7, INFO_PROVIDER_7, set_info_provider_7);
-info_provider_iface!(info_provider_iface_init_8, info_provider_update_file_info_8, info_provider_update_file_info_bg_8, info_provider_cancel_update_8, INFO_PROVIDER_8, set_info_provider_8);
-info_provider_iface!(info_provider_iface_init_9, info_provider_update_file_info_9, info_provider_update_file_info_bg_9, info_provider_cancel_update_9, INFO_PROVIDER_9, set_info_provider_9);
+#[rustfmt::skip] info_provider_iface!(info_provider_iface_init_0, info_provider_update_file_info_0, info_provider_update_file_info_bg_0, info_provider_cancel_update_0, INFO_PROVIDER_0, set_info_provider_0);
+#[rustfmt::skip] info_provider_iface!(info_provider_iface_init_1, info_provider_update_file_info_1, info_provider_update_file_info_bg_1, info_provider_cancel_update_1, INFO_PROVIDER_1, set_info_provider_1);
+#[rustfmt::skip] info_provider_iface!(info_provider_iface_init_2, info_provider_update_file_info_2, info_provider_update_file_info_bg_2, info_provider_cancel_update_2, INFO_PROVIDER_2, set_info_provider_2);
+#[rustfmt::skip] info_provider_iface!(info_provider_iface_init_3, info_provider_update_file_info_3, info_provider_update_file_info_bg_3, info_provider_cancel_update_3, INFO_PROVIDER_3, set_info_provider_3);
+#[rustfmt::skip] info_provider_iface!(info_provider_iface_init_4, info_provider_update_file_info_4, info_provider_update_file_info_bg_4, info_provider_cancel_update_4, INFO_PROVIDER_4, set_info_provider_4);
+#[rustfmt::skip] info_provider_iface!(info_provider_iface_init_5, info_provider_update_file_info_5, info_provider_update_file_info_bg_5, info_provider_cancel_update_5, INFO_PROVIDER_5, set_info_provider_5);
+#[rustfmt::skip] info_provider_iface!(info_provider_iface_init_6, info_provider_update_file_info_6, info_provider_update_file_info_bg_6, info_provider_cancel_update_6, INFO_PROVIDER_6, set_info_provider_6);
+#[rustfmt::skip] info_provider_iface!(info_provider_iface_init_7, info_provider_update_file_info_7, info_provider_update_file_info_bg_7, info_provider_cancel_update_7, INFO_PROVIDER_7, set_info_provider_7);
+#[rustfmt::skip] info_provider_iface!(info_provider_iface_init_8, info_provider_update_file_info_8, info_provider_update_file_info_bg_8, info_provider_cancel_update_8, INFO_PROVIDER_8, set_info_provider_8);
+#[rustfmt::skip] info_provider_iface!(info_provider_iface_init_9, info_provider_update_file_info_9, info_provider_update_file_info_bg_9, info_provider_cancel_update_9, INFO_PROVIDER_9, set_info_provider_9);
 
 pub fn info_provider_iface_externs() -> Vec<unsafe extern "C" fn(gpointer, gpointer)> {
     vec![

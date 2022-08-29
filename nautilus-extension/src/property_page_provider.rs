@@ -1,14 +1,14 @@
-use crate::glib_ffi::{GList, g_list_append, gpointer};
+use crate::glib_ffi::{g_list_append, gpointer, GList};
 use crate::gtk_ffi::GtkWidget;
 use crate::info_provider::FileInfo;
+use crate::nautilus_ffi::{nautilus_property_page_new, NautilusPropertyPageProvider};
+use crate::translate::file_info_vec_from_g_list;
 use libc::c_void;
-use crate::nautilus_ffi::{NautilusPropertyPageProvider, nautilus_property_page_new};
 use std::borrow::Cow;
 use std::ffi::CString;
 use std::ptr;
-use std::sync::Mutex;
 use std::sync::atomic::{AtomicUsize, Ordering};
-use crate::translate::file_info_vec_from_g_list;
+use std::sync::Mutex;
 
 pub struct PropertyPage {
     pub name: Cow<'static, str>,
@@ -17,7 +17,11 @@ pub struct PropertyPage {
 }
 
 impl PropertyPage {
-    pub fn new<S: Into<Cow<'static, str>>>(name: S, raw_label: *mut GtkWidget, raw_page: *mut GtkWidget) -> PropertyPage {
+    pub fn new<S: Into<Cow<'static, str>>>(
+        name: S,
+        raw_label: *mut GtkWidget,
+        raw_page: *mut GtkWidget,
+    ) -> PropertyPage {
         PropertyPage {
             name: name.into(),
             raw_label,
@@ -26,7 +30,7 @@ impl PropertyPage {
     }
 }
 
-pub trait PropertyPageProvider : Send {
+pub trait PropertyPageProvider: Send {
     fn get_pages(&self, files: &[FileInfo]) -> Vec<PropertyPage>;
 }
 
@@ -45,7 +49,10 @@ macro_rules! property_page_provider_iface {
         }
 
         #[no_mangle]
-        pub extern "C" fn $get_pages_fn(_provider: *mut NautilusPropertyPageProvider, raw_files: *mut GList) -> *mut GList {
+        pub extern "C" fn $get_pages_fn(
+            _provider: *mut NautilusPropertyPageProvider,
+            raw_files: *mut GList,
+        ) -> *mut GList {
             let mut pages_g_list = ptr::null_mut();
 
             let pages = match *$rust_provider.lock().unwrap() {
@@ -75,22 +82,23 @@ macro_rules! property_page_provider_iface {
         }
 
         lazy_static! {
-            static ref $rust_provider: Mutex<Option<Box<dyn PropertyPageProvider>>> = Mutex::new(None);
+            static ref $rust_provider: Mutex<Option<Box<dyn PropertyPageProvider>>> =
+                Mutex::new(None);
         }
-    }
+    };
 }
 
 // Let library consumer add up to 10 ColumnProviders, should be more than enough. Each has its own Vec of columns.
-property_page_provider_iface!(property_page_provider_iface_init_0, property_page_provider_get_pages_0, PROPERTY_PAGE_PROVIDER_0, set_property_page_provider_0);
-property_page_provider_iface!(property_page_provider_iface_init_1, property_page_provider_get_pages_1, PROPERTY_PAGE_PROVIDER_1, set_property_page_provider_1);
-property_page_provider_iface!(property_page_provider_iface_init_2, property_page_provider_get_pages_2, PROPERTY_PAGE_PROVIDER_2, set_property_page_provider_2);
-property_page_provider_iface!(property_page_provider_iface_init_3, property_page_provider_get_pages_3, PROPERTY_PAGE_PROVIDER_3, set_property_page_provider_3);
-property_page_provider_iface!(property_page_provider_iface_init_4, property_page_provider_get_pages_4, PROPERTY_PAGE_PROVIDER_4, set_property_page_provider_4);
-property_page_provider_iface!(property_page_provider_iface_init_5, property_page_provider_get_pages_5, PROPERTY_PAGE_PROVIDER_5, set_property_page_provider_5);
-property_page_provider_iface!(property_page_provider_iface_init_6, property_page_provider_get_pages_6, PROPERTY_PAGE_PROVIDER_6, set_property_page_provider_6);
-property_page_provider_iface!(property_page_provider_iface_init_7, property_page_provider_get_pages_7, PROPERTY_PAGE_PROVIDER_7, set_property_page_provider_7);
-property_page_provider_iface!(property_page_provider_iface_init_8, property_page_provider_get_pages_8, PROPERTY_PAGE_PROVIDER_8, set_property_page_provider_8);
-property_page_provider_iface!(property_page_provider_iface_init_9, property_page_provider_get_pages_9, PROPERTY_PAGE_PROVIDER_9, set_property_page_provider_9);
+#[rustfmt::skip] property_page_provider_iface!(property_page_provider_iface_init_0, property_page_provider_get_pages_0, PROPERTY_PAGE_PROVIDER_0, set_property_page_provider_0);
+#[rustfmt::skip] property_page_provider_iface!(property_page_provider_iface_init_1, property_page_provider_get_pages_1, PROPERTY_PAGE_PROVIDER_1, set_property_page_provider_1);
+#[rustfmt::skip] property_page_provider_iface!(property_page_provider_iface_init_2, property_page_provider_get_pages_2, PROPERTY_PAGE_PROVIDER_2, set_property_page_provider_2);
+#[rustfmt::skip] property_page_provider_iface!(property_page_provider_iface_init_3, property_page_provider_get_pages_3, PROPERTY_PAGE_PROVIDER_3, set_property_page_provider_3);
+#[rustfmt::skip] property_page_provider_iface!(property_page_provider_iface_init_4, property_page_provider_get_pages_4, PROPERTY_PAGE_PROVIDER_4, set_property_page_provider_4);
+#[rustfmt::skip] property_page_provider_iface!(property_page_provider_iface_init_5, property_page_provider_get_pages_5, PROPERTY_PAGE_PROVIDER_5, set_property_page_provider_5);
+#[rustfmt::skip] property_page_provider_iface!(property_page_provider_iface_init_6, property_page_provider_get_pages_6, PROPERTY_PAGE_PROVIDER_6, set_property_page_provider_6);
+#[rustfmt::skip] property_page_provider_iface!(property_page_provider_iface_init_7, property_page_provider_get_pages_7, PROPERTY_PAGE_PROVIDER_7, set_property_page_provider_7);
+#[rustfmt::skip] property_page_provider_iface!(property_page_provider_iface_init_8, property_page_provider_get_pages_8, PROPERTY_PAGE_PROVIDER_8, set_property_page_provider_8);
+#[rustfmt::skip] property_page_provider_iface!(property_page_provider_iface_init_9, property_page_provider_get_pages_9, PROPERTY_PAGE_PROVIDER_9, set_property_page_provider_9);
 
 pub fn property_page_provider_iface_externs() -> Vec<unsafe extern "C" fn(gpointer, gpointer)> {
     vec![

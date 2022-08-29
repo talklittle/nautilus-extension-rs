@@ -1,4 +1,4 @@
-use crate::glib_ffi::{GList, g_list_length, g_list_nth_data};
+use crate::glib_ffi::{g_list_length, g_list_nth_data, GList};
 use crate::info_provider::FileInfo;
 use crate::nautilus_ffi::NautilusFileInfo;
 

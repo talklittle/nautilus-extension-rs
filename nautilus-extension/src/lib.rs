@@ -11,16 +11,16 @@ extern crate nautilus_extension_sys as nautilus_ffi;
 
 pub use crate::column_provider::{Column, ColumnProvider};
 pub use crate::info_provider::{FileInfo, InfoProvider};
-pub use lazy_static::lazy_static;
 pub use crate::menu_provider::{Menu, MenuItem, MenuProvider};
 pub use crate::nautilus_module::NautilusModule;
 pub use crate::property_page_provider::{PropertyPage, PropertyPageProvider};
+pub use lazy_static::lazy_static;
 
 pub mod column_provider;
 pub mod info_provider;
 pub mod menu_provider;
-pub mod property_page_provider;
 mod nautilus_module;
+pub mod property_page_provider;
 mod translate;
 
 #[macro_export]
@@ -59,14 +59,13 @@ macro_rules! nautilus_menu_item_activate_cb {
     ($extern_fn:ident, $safe_fn:ident) => {
         #[no_mangle]
         pub unsafe extern "C" fn $extern_fn(_nautilusmenuitem: *mut GObject, user_data: gpointer) {
-            use $crate::info_provider::FileInfo;
             use std::mem;
+            use $crate::info_provider::FileInfo;
 
             let files: Box<Vec<FileInfo>> = Box::from_raw(mem::transmute(user_data));
             $safe_fn(*files);
         }
-
-    }
+    };
 }
 
 #[macro_export]
@@ -74,19 +73,17 @@ macro_rules! nautilus_menu_background_activate_cb {
     ($extern_fn:ident, $safe_fn:ident) => {
         #[no_mangle]
         pub unsafe extern "C" fn $extern_fn(_nautilusmenuitem: *mut GObject, user_data: gpointer) {
-            use $crate::info_provider::FileInfo;
             use std::mem;
+            use $crate::info_provider::FileInfo;
 
             let file: Box<FileInfo> = Box::from_raw(mem::transmute(user_data));
             $safe_fn(*file);
         }
-
-    }
+    };
 }
 
 #[cfg(test)]
 mod tests {
     #[test]
-    fn it_works() {
-    }
+    fn it_works() {}
 }

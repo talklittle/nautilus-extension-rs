@@ -1,13 +1,30 @@
-use crate::column_provider::{ColumnProvider, take_next_column_provider_iface_index, column_provider_iface_externs, rust_column_provider_setters};
+use crate::column_provider::{
+    column_provider_iface_externs, rust_column_provider_setters,
+    take_next_column_provider_iface_index, ColumnProvider,
+};
 use crate::glib_ffi::GType;
-use crate::gobject_ffi::{GInterfaceInfo, GObjectClass, GTypeInfo, GTypeModule, GTypeQuery, GTypeValueTable};
-use crate::gobject_ffi::{g_type_module_add_interface, g_type_module_register_type, g_type_query};
 use crate::gobject_ffi::G_TYPE_OBJECT;
-use crate::info_provider::{InfoProvider, take_next_info_provider_iface_index, info_provider_iface_externs, rust_info_provider_setters};
+use crate::gobject_ffi::{g_type_module_add_interface, g_type_module_register_type, g_type_query};
+use crate::gobject_ffi::{
+    GInterfaceInfo, GObjectClass, GTypeInfo, GTypeModule, GTypeQuery, GTypeValueTable,
+};
+use crate::info_provider::{
+    info_provider_iface_externs, rust_info_provider_setters, take_next_info_provider_iface_index,
+    InfoProvider,
+};
+use crate::menu_provider::{
+    menu_provider_iface_externs, rust_menu_provider_setters, take_next_menu_provider_iface_index,
+    MenuProvider,
+};
+use crate::nautilus_ffi::{
+    nautilus_column_provider_get_type, nautilus_info_provider_get_type,
+    nautilus_menu_provider_get_type, nautilus_property_page_provider_get_type,
+};
+use crate::property_page_provider::{
+    property_page_provider_iface_externs, rust_property_page_provider_setters,
+    take_next_property_page_provider_iface_index, PropertyPageProvider,
+};
 use libc::c_char;
-use crate::menu_provider::{MenuProvider, take_next_menu_provider_iface_index, menu_provider_iface_externs, rust_menu_provider_setters};
-use crate::nautilus_ffi::{nautilus_column_provider_get_type, nautilus_info_provider_get_type, nautilus_menu_provider_get_type, nautilus_property_page_provider_get_type};
-use crate::property_page_provider::{PropertyPageProvider, take_next_property_page_provider_iface_index, property_page_provider_iface_externs, rust_property_page_provider_setters};
 use std::borrow::Cow;
 use std::ffi::CString;
 use std::mem;
@@ -15,7 +32,7 @@ use std::ptr;
 
 #[repr(C)]
 struct NautilusExtensionClass {
-    _parent_slot: GObjectClass
+    _parent_slot: GObjectClass,
 }
 
 const EMPTY_VALUE_TABLE: GTypeValueTable = GTypeValueTable {
@@ -26,7 +43,7 @@ const EMPTY_VALUE_TABLE: GTypeValueTable = GTypeValueTable {
     collect_format: 0 as *const c_char,
     collect_value: None,
     lcopy_format: 0 as *const c_char,
-    lcopy_value: None
+    lcopy_value: None,
 };
 
 pub struct NautilusModule {
@@ -50,7 +67,10 @@ impl NautilusModule {
         }
     }
 
-    pub fn add_column_provider<T: ColumnProvider + 'static>(&mut self, column_provider: T) -> &mut NautilusModule {
+    pub fn add_column_provider<T: ColumnProvider + 'static>(
+        &mut self,
+        column_provider: T,
+    ) -> &mut NautilusModule {
         let index = take_next_column_provider_iface_index();
         let iface_init_fn = column_provider_iface_externs()[index];
         let rust_provider_setter = &rust_column_provider_setters()[index];
@@ -63,12 +83,16 @@ impl NautilusModule {
 
         rust_provider_setter(Box::new(column_provider));
 
-        self.column_provider_iface_infos.push(column_provider_iface_info);
+        self.column_provider_iface_infos
+            .push(column_provider_iface_info);
 
         self
     }
 
-    pub fn add_info_provider<T: InfoProvider + 'static>(&mut self, info_provider: T) -> &mut NautilusModule {
+    pub fn add_info_provider<T: InfoProvider + 'static>(
+        &mut self,
+        info_provider: T,
+    ) -> &mut NautilusModule {
         let index = take_next_info_provider_iface_index();
         let iface_init_fn = info_provider_iface_externs()[index];
         let rust_provider_setter = &rust_info_provider_setters()[index];
@@ -81,12 +105,16 @@ impl NautilusModule {
 
         rust_provider_setter(Box::new(info_provider));
 
-        self.info_provider_iface_infos.push(info_provider_iface_info);
+        self.info_provider_iface_infos
+            .push(info_provider_iface_info);
 
         self
     }
 
-    pub fn add_menu_provider<T: MenuProvider + 'static>(&mut self, menu_provider: T) -> &mut NautilusModule {
+    pub fn add_menu_provider<T: MenuProvider + 'static>(
+        &mut self,
+        menu_provider: T,
+    ) -> &mut NautilusModule {
         let index = take_next_menu_provider_iface_index();
         let iface_init_fn = menu_provider_iface_externs()[index];
         let rust_provider_setter = &rust_menu_provider_setters()[index];
@@ -99,12 +127,16 @@ impl NautilusModule {
 
         rust_provider_setter(Box::new(menu_provider));
 
-        self.menu_provider_iface_infos.push(menu_provider_iface_info);
+        self.menu_provider_iface_infos
+            .push(menu_provider_iface_info);
 
         self
     }
 
-    pub fn add_property_page_provider<T: PropertyPageProvider + 'static>(&mut self, property_page_provider: T) -> &mut NautilusModule {
+    pub fn add_property_page_provider<T: PropertyPageProvider + 'static>(
+        &mut self,
+        property_page_provider: T,
+    ) -> &mut NautilusModule {
         let index = take_next_property_page_provider_iface_index();
         let iface_init_fn = property_page_provider_iface_externs()[index];
         let rust_provider_setter = &rust_property_page_provider_setters()[index];
@@ -117,7 +149,8 @@ impl NautilusModule {
 
         rust_provider_setter(Box::new(property_page_provider));
 
-        self.property_page_provider_iface_infos.push(property_page_provider_iface_info);
+        self.property_page_provider_iface_infos
+            .push(property_page_provider_iface_info);
 
         self
     }
@@ -135,26 +168,47 @@ impl NautilusModule {
             instance_size: g_object_instance_size(),
             n_preallocs: 0,
             instance_init: None,
-            value_table: &EMPTY_VALUE_TABLE
+            value_table: &EMPTY_VALUE_TABLE,
         };
 
         unsafe {
-            let module_type = g_type_module_register_type(self.module, G_TYPE_OBJECT, name.as_ptr(), &info, 0);
+            let module_type =
+                g_type_module_register_type(self.module, G_TYPE_OBJECT, name.as_ptr(), &info, 0);
 
             for column_provider_iface_info in &self.column_provider_iface_infos {
-                g_type_module_add_interface(self.module, module_type, nautilus_column_provider_get_type(), column_provider_iface_info);
+                g_type_module_add_interface(
+                    self.module,
+                    module_type,
+                    nautilus_column_provider_get_type(),
+                    column_provider_iface_info,
+                );
             }
 
             for info_provider_iface_info in &self.info_provider_iface_infos {
-                g_type_module_add_interface(self.module, module_type, nautilus_info_provider_get_type(), info_provider_iface_info);
+                g_type_module_add_interface(
+                    self.module,
+                    module_type,
+                    nautilus_info_provider_get_type(),
+                    info_provider_iface_info,
+                );
             }
 
             for menu_provider_iface_info in &self.menu_provider_iface_infos {
-                g_type_module_add_interface(self.module, module_type, nautilus_menu_provider_get_type(), menu_provider_iface_info);
+                g_type_module_add_interface(
+                    self.module,
+                    module_type,
+                    nautilus_menu_provider_get_type(),
+                    menu_provider_iface_info,
+                );
             }
 
             for property_page_provider_iface_info in &self.property_page_provider_iface_infos {
-                g_type_module_add_interface(self.module, module_type, nautilus_property_page_provider_get_type(), property_page_provider_iface_info);
+                g_type_module_add_interface(
+                    self.module,
+                    module_type,
+                    nautilus_property_page_provider_get_type(),
+                    property_page_provider_iface_info,
+                );
             }
 
             module_type
@@ -167,7 +221,7 @@ fn g_object_instance_size() -> u16 {
         instance_size: 0,
         class_size: 0,
         type_name: ptr::null::<c_char>(),
-        type_: 0
+        type_: 0,
     };
     unsafe {
         g_type_query(G_TYPE_OBJECT, &mut query);

@@ -1,31 +1,37 @@
-use crate::glib_ffi::{GList, g_list_append, gpointer};
-use crate::gobject_ffi::{GObject, g_signal_connect_data};
+use crate::glib_ffi::{g_list_append, gpointer, GList};
+use crate::gobject_ffi::{g_signal_connect_data, GObject};
 use crate::gtk_ffi::GtkWidget;
 use crate::info_provider::FileInfo;
+use crate::nautilus_ffi::{
+    nautilus_menu_append_item, nautilus_menu_item_new, nautilus_menu_item_set_submenu,
+    nautilus_menu_new,
+};
+use crate::nautilus_ffi::{
+    NautilusFileInfo, NautilusMenu, NautilusMenuItem, NautilusMenuProviderIface,
+};
+use crate::translate::file_info_vec_from_g_list;
 use libc::c_void;
-use crate::nautilus_ffi::{NautilusFileInfo, NautilusMenu, NautilusMenuItem, NautilusMenuProviderIface};
-use crate::nautilus_ffi::{nautilus_menu_new, nautilus_menu_append_item, nautilus_menu_item_new, nautilus_menu_item_set_submenu};
 use std::borrow::Cow;
 use std::ffi::CString;
 use std::mem;
 use std::ptr;
-use std::sync::Mutex;
 use std::sync::atomic::{AtomicUsize, Ordering};
-use crate::translate::file_info_vec_from_g_list;
+use std::sync::Mutex;
 
-pub trait MenuProvider : Send + Sync {
-
+pub trait MenuProvider: Send + Sync {
     #[allow(unused_variables)]
     fn get_file_items(&self, window: *mut GtkWidget, files: &[FileInfo]) -> Vec<MenuItem> {
         Vec::new()
     }
 
-
     #[allow(unused_variables)]
-    fn get_background_items(&self, window: *mut GtkWidget, current_folder: &FileInfo) -> Vec<MenuItem> {
+    fn get_background_items(
+        &self,
+        window: *mut GtkWidget,
+        current_folder: &FileInfo,
+    ) -> Vec<MenuItem> {
         Vec::new()
     }
-
 }
 
 #[derive(Clone)]
@@ -47,11 +53,10 @@ impl Menu {
             let raw_name = CString::new(&menu_item.name as &str).unwrap().into_raw();
             let raw_label = CString::new(&menu_item.label as &str).unwrap().into_raw();
             let raw_tip = CString::new(&menu_item.tip as &str).unwrap().into_raw();
-            let raw_icon =
-                match menu_item.icon {
-                    Some(ref ic) => CString::new(ic as &str).unwrap().into_raw(),
-                    None => ptr::null_mut(),
-                };
+            let raw_icon = match menu_item.icon {
+                Some(ref ic) => CString::new(ic as &str).unwrap().into_raw(),
+                None => ptr::null_mut(),
+            };
 
             unsafe {
                 let raw_menuitem = nautilus_menu_item_new(raw_name, raw_label, raw_tip, raw_icon);
@@ -64,7 +69,9 @@ impl Menu {
                 }
 
                 match menu_item.activate_fn {
-                    Some(activate_fn) => connect_activate_signal(raw_menuitem, activate_fn, files_user_data),
+                    Some(activate_fn) => {
+                        connect_activate_signal(raw_menuitem, activate_fn, files_user_data)
+                    }
                     None => (),
                 }
 
@@ -90,11 +97,10 @@ impl Menu {
             let raw_name = CString::new(&menu_item.name as &str).unwrap().into_raw();
             let raw_label = CString::new(&menu_item.label as &str).unwrap().into_raw();
             let raw_tip = CString::new(&menu_item.tip as &str).unwrap().into_raw();
-            let raw_icon =
-                match menu_item.icon {
-                    Some(ref icon) => CString::new(icon as &str).unwrap().into_raw(),
-                    None => ptr::null_mut(),
-                };
+            let raw_icon = match menu_item.icon {
+                Some(ref icon) => CString::new(icon as &str).unwrap().into_raw(),
+                None => ptr::null_mut(),
+            };
 
             unsafe {
                 let raw_menuitem = nautilus_menu_item_new(raw_name, raw_label, raw_tip, raw_icon);
@@ -107,7 +113,9 @@ impl Menu {
                 }
 
                 match menu_item.activate_fn {
-                    Some(activate_fn) => connect_activate_signal(raw_menuitem, activate_fn, files_user_data),
+                    Some(activate_fn) => {
+                        connect_activate_signal(raw_menuitem, activate_fn, files_user_data)
+                    }
                     None => (),
                 }
 
@@ -153,7 +161,10 @@ impl MenuItem {
         self
     }
 
-    pub fn set_activate_cb(&mut self, activate_cb: unsafe extern "C" fn(*mut GObject, gpointer)) -> &mut MenuItem {
+    pub fn set_activate_cb(
+        &mut self,
+        activate_cb: unsafe extern "C" fn(*mut GObject, gpointer),
+    ) -> &mut MenuItem {
         self.activate_fn = Some(activate_cb);
         self
     }
@@ -161,7 +172,6 @@ impl MenuItem {
 
 macro_rules! menu_provider_iface {
     ($iface_init_fn:ident, $get_file_items_fn:ident, $get_background_items_fn:ident, $rust_provider:ident, $set_rust_provider:ident) => {
-
         /// # Safety
         ///
         /// This generated function is used as a Nautilus callback. Do not call directly.
@@ -174,18 +184,21 @@ macro_rules! menu_provider_iface {
         }
 
         #[no_mangle]
-        pub extern "C" fn $get_file_items_fn(_provider: *mut c_void, window: *mut GtkWidget, files: *mut GList) -> *mut GList {
+        pub extern "C" fn $get_file_items_fn(
+            _provider: *mut c_void,
+            window: *mut GtkWidget,
+            files: *mut GList,
+        ) -> *mut GList {
             if files.is_null() {
                 return ptr::null_mut() as *mut GList;
             }
 
             let files_vec = file_info_vec_from_g_list(files);
 
-            let file_items: Vec<MenuItem> =
-                match *$rust_provider.lock().unwrap() {
-                    Some(ref p) => p.get_file_items(window, &files_vec),
-                    None => Vec::new(),
-                };
+            let file_items: Vec<MenuItem> = match *$rust_provider.lock().unwrap() {
+                Some(ref p) => p.get_file_items(window, &files_vec),
+                None => Vec::new(),
+            };
 
             // dummy top-level Menu for easy recursion
             let top_menu = Menu {
@@ -196,18 +209,21 @@ macro_rules! menu_provider_iface {
         }
 
         #[no_mangle]
-        pub extern "C" fn $get_background_items_fn(_provider: *mut c_void, window: *mut GtkWidget, current_folder: *mut NautilusFileInfo) -> *mut GList {
+        pub extern "C" fn $get_background_items_fn(
+            _provider: *mut c_void,
+            window: *mut GtkWidget,
+            current_folder: *mut NautilusFileInfo,
+        ) -> *mut GList {
             if current_folder.is_null() {
                 return ptr::null_mut() as *mut GList;
             }
 
             let file_info = FileInfo::new(current_folder);
 
-            let file_items: Vec<MenuItem> =
-                match *$rust_provider.lock().unwrap() {
-                    Some(ref p) => p.get_background_items(window, &file_info),
-                    None => Vec::new(),
-                };
+            let file_items: Vec<MenuItem> = match *$rust_provider.lock().unwrap() {
+                Some(ref p) => p.get_background_items(window, &file_info),
+                None => Vec::new(),
+            };
 
             // dummy top-level Menu for easy recursion
             let top_menu = Menu {
@@ -224,17 +240,25 @@ macro_rules! menu_provider_iface {
         lazy_static! {
             static ref $rust_provider: Mutex<Option<Box<dyn MenuProvider>>> = Mutex::new(None);
         }
-    }
+    };
 }
 
-fn process_submenu(raw_menuitem: *mut NautilusMenuItem, submenu: &Menu, files_user_data: *mut c_void) {
+fn process_submenu(
+    raw_menuitem: *mut NautilusMenuItem,
+    submenu: &Menu,
+    files_user_data: *mut c_void,
+) {
     let raw_submenu = submenu.to_raw(files_user_data);
     unsafe {
         nautilus_menu_item_set_submenu(raw_menuitem, raw_submenu);
     }
 }
 
-fn connect_activate_signal(raw_menuitem: *mut NautilusMenuItem, activate_fn: unsafe extern "C" fn(*mut GObject, gpointer), data: gpointer) {
+fn connect_activate_signal(
+    raw_menuitem: *mut NautilusMenuItem,
+    activate_fn: unsafe extern "C" fn(*mut GObject, gpointer),
+    data: gpointer,
+) {
     let activate_name = CString::new("activate").unwrap().into_raw();
 
     unsafe {
@@ -244,7 +268,7 @@ fn connect_activate_signal(raw_menuitem: *mut NautilusMenuItem, activate_fn: uns
             Some(mem::transmute(activate_fn as *mut c_void)),
             data as *mut c_void,
             None,
-            0
+            0,
         );
 
         // deallocate CStrings
@@ -252,16 +276,16 @@ fn connect_activate_signal(raw_menuitem: *mut NautilusMenuItem, activate_fn: uns
     }
 }
 
-menu_provider_iface!(menu_provider_iface_init_0, menu_provider_get_file_items_0, menu_provider_get_background_items_0, MENU_PROVIDER_0, set_menu_provider_0);
-menu_provider_iface!(menu_provider_iface_init_1, menu_provider_get_file_items_1, menu_provider_get_background_items_1, MENU_PROVIDER_1, set_menu_provider_1);
-menu_provider_iface!(menu_provider_iface_init_2, menu_provider_get_file_items_2, menu_provider_get_background_items_2, MENU_PROVIDER_2, set_menu_provider_2);
-menu_provider_iface!(menu_provider_iface_init_3, menu_provider_get_file_items_3, menu_provider_get_background_items_3, MENU_PROVIDER_3, set_menu_provider_3);
-menu_provider_iface!(menu_provider_iface_init_4, menu_provider_get_file_items_4, menu_provider_get_background_items_4, MENU_PROVIDER_4, set_menu_provider_4);
-menu_provider_iface!(menu_provider_iface_init_5, menu_provider_get_file_items_5, menu_provider_get_background_items_5, MENU_PROVIDER_5, set_menu_provider_5);
-menu_provider_iface!(menu_provider_iface_init_6, menu_provider_get_file_items_6, menu_provider_get_background_items_6, MENU_PROVIDER_6, set_menu_provider_6);
-menu_provider_iface!(menu_provider_iface_init_7, menu_provider_get_file_items_7, menu_provider_get_background_items_7, MENU_PROVIDER_7, set_menu_provider_7);
-menu_provider_iface!(menu_provider_iface_init_8, menu_provider_get_file_items_8, menu_provider_get_background_items_8, MENU_PROVIDER_8, set_menu_provider_8);
-menu_provider_iface!(menu_provider_iface_init_9, menu_provider_get_file_items_9, menu_provider_get_background_items_9, MENU_PROVIDER_9, set_menu_provider_9);
+#[rustfmt::skip] menu_provider_iface!(menu_provider_iface_init_0, menu_provider_get_file_items_0, menu_provider_get_background_items_0, MENU_PROVIDER_0, set_menu_provider_0);
+#[rustfmt::skip] menu_provider_iface!(menu_provider_iface_init_1, menu_provider_get_file_items_1, menu_provider_get_background_items_1, MENU_PROVIDER_1, set_menu_provider_1);
+#[rustfmt::skip] menu_provider_iface!(menu_provider_iface_init_2, menu_provider_get_file_items_2, menu_provider_get_background_items_2, MENU_PROVIDER_2, set_menu_provider_2);
+#[rustfmt::skip] menu_provider_iface!(menu_provider_iface_init_3, menu_provider_get_file_items_3, menu_provider_get_background_items_3, MENU_PROVIDER_3, set_menu_provider_3);
+#[rustfmt::skip] menu_provider_iface!(menu_provider_iface_init_4, menu_provider_get_file_items_4, menu_provider_get_background_items_4, MENU_PROVIDER_4, set_menu_provider_4);
+#[rustfmt::skip] menu_provider_iface!(menu_provider_iface_init_5, menu_provider_get_file_items_5, menu_provider_get_background_items_5, MENU_PROVIDER_5, set_menu_provider_5);
+#[rustfmt::skip] menu_provider_iface!(menu_provider_iface_init_6, menu_provider_get_file_items_6, menu_provider_get_background_items_6, MENU_PROVIDER_6, set_menu_provider_6);
+#[rustfmt::skip] menu_provider_iface!(menu_provider_iface_init_7, menu_provider_get_file_items_7, menu_provider_get_background_items_7, MENU_PROVIDER_7, set_menu_provider_7);
+#[rustfmt::skip] menu_provider_iface!(menu_provider_iface_init_8, menu_provider_get_file_items_8, menu_provider_get_background_items_8, MENU_PROVIDER_8, set_menu_provider_8);
+#[rustfmt::skip] menu_provider_iface!(menu_provider_iface_init_9, menu_provider_get_file_items_9, menu_provider_get_background_items_9, MENU_PROVIDER_9, set_menu_provider_9);
 
 pub fn menu_provider_iface_externs() -> Vec<unsafe extern "C" fn(gpointer, gpointer)> {
     vec![
